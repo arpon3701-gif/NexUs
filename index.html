@@ -5,9 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     <title>NexusPlay – ৳ Betting</title>
 
-    <script src="https://www.gstatic.com/firebasejs/11.0.1/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/11.0.1/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/11.0.1/firebase-database-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/11.0.1/firebase-app-compat.js">
+    </script>
+    <script src="https://www.gstatic.com/firebasejs/11.0.1/firebase-auth-compat.js">
+    </script>
+    <script src="https://www.gstatic.com/firebasejs/11.0.1/firebase-database-compat.js">
+    </script>
 
     <style>
         :root {
@@ -82,7 +85,7 @@
             opacity: 0;
             pointer-events: none;
             transform: translateX(100%);
-            transition: opacity 0.4s ease, transform 0.4s ease;
+            transition: opacity 0.35s ease, transform 0.35s ease;
             overflow-y: auto;
             display: flex;
             flex-direction: column;
@@ -111,7 +114,7 @@
         #loading-screen.fade-out {
             opacity: 0;
             pointer-events: none;
-            transition: opacity 0.6s ease;
+            transition: opacity 0.4s ease;
         }
         .loader-logo .nexus-icon {
             width: 100px;
@@ -126,14 +129,14 @@
             font-weight: 900;
             color: #fff;
             box-shadow: 0 0 60px rgba(108, 92, 231, 0.5);
-            animation: pulseGlow 2s ease-in-out infinite alternate;
+            animation: pulseGlow 1.2s ease-in-out infinite alternate;
         }
         @keyframes pulseGlow {
             0% {
                 box-shadow: 0 0 30px rgba(108, 92, 231, 0.3);
             }
             100% {
-                box-shadow: 0 0 80px rgba(108, 92, 231, 0.7);
+                box-shadow: 0 0 70px rgba(108, 92, 231, 0.7);
             }
         }
         .loader-title {
@@ -164,18 +167,7 @@
             width: 0%;
             background: linear-gradient(90deg, #6c5ce7, #fd79a8);
             border-radius: 4px;
-            animation: loadBar 2.2s ease-in-out forwards;
-        }
-        @keyframes loadBar {
-            0% {
-                width: 0%;
-            }
-            80% {
-                width: 90%;
-            }
-            100% {
-                width: 100%;
-            }
+            transition: width 0.1s linear;
         }
         .loader-percent {
             color: #7f8fa6;
@@ -589,7 +581,6 @@
             margin-top: 4px;
         }
 
-        /* Light theme overrides for game cards */
         body.light .game-card .team,
         body.light .game-card .game-sport,
         body.light .game-card .game-top span,
@@ -628,7 +619,7 @@
             padding: 18px 20px 24px;
             z-index: 600;
             transform: translateY(100%);
-            transition: transform 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+            transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1);
             box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.5);
             max-height: 60vh;
             overflow-y: auto;
@@ -872,7 +863,7 @@
             transition: none;
         }
         .dice.rolling {
-            animation: diceRoll 0.8s ease-out;
+            animation: diceRoll 0.7s ease-out;
         }
         @keyframes diceRoll {
             0% {
@@ -1224,7 +1215,7 @@
             background: #101624;
             border-right: 1px solid rgba(108, 92, 231, 0.15);
             z-index: 1000;
-            transition: left 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+            transition: left 0.3s cubic-bezier(0.22, 1, 0.36, 1);
             display: flex;
             flex-direction: column;
             box-shadow: 5px 0 30px rgba(0, 0, 0, 0.5);
@@ -1618,7 +1609,7 @@
             <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; height:100%; padding:40px; text-align:center;">
                 <div style="font-size:80px; margin-bottom:20px;">🔧</div>
                 <h2 style="color:#fdcb6e; margin-bottom:12px;">Under Maintenance</h2>
-                <p id="maintenanceScreenMsg" style="color:#e0e6f0; font-size:16px; max-width:320px;">We’re currently performing scheduled maintenance. Please check back later.</p>
+                <p id="maintenanceScreenMsg" style="color:#e0e6f0; font-size:16px; max-width:320px;">We're currently performing scheduled maintenance. Please check back later.</p>
                 <button id="maintenanceLogoutBtn" class="auth-btn" style="margin-top:30px; padding:12px 30px;">Sign Out</button>
             </div>
         </div>
@@ -1854,8 +1845,8 @@
                 streak: 0,
                 totalBets: 0,
                 wins: 0,
-                betHistory: [],         // used to display bets; now an array of objects with unique IDs
-                paymentHistory: [],     // fetched from separate node
+                betHistory: [],
+                paymentHistory: [],
                 games: [],
                 paymentMethods: { deposit: [], withdraw: [] },
                 quickGameSettings: { underOver7: { enabled: true, winPercentage: 50, forceWin: false } },
@@ -1865,8 +1856,10 @@
                 maintenanceMessage: 'Under Maintenance',
                 selectedCategory: 'all',
                 isAnimating: false,
+                authReady: false,
             };
 
+            let globalListenersSetup = false;
             let selectedBet = null;
             let selectedOdds = {};
             let countdownIntervals = {};
@@ -2023,17 +2016,20 @@
                 newScreen.classList.remove('inactive-right', 'inactive-left');
                 newScreen.classList.add('active');
                 currentScreen = newScreen;
-                bottomNav.querySelectorAll('button').forEach(b => {
-                    b.classList.toggle('active', b.dataset.screen === newScreen.id);
-                });
+                if (bottomNav) {
+                    bottomNav.querySelectorAll('button').forEach(b => {
+                        b.classList.toggle('active', b.dataset.screen === newScreen.id);
+                    });
+                }
                 setTimeout(() => {
                     old.classList.remove('inactive-right', 'inactive-left');
-                }, 500);
+                }, 400);
             }
 
             function navigateTo(newScreen, dir = 'right') {
                 if (currentScreen === newScreen) return;
-                if (state.maintenanceMode && newScreen !== maintenanceScreen && newScreen !== authScreen && newScreen !== loadingScreen) {
+                if (state.maintenanceMode && newScreen !== maintenanceScreen && newScreen !== authScreen && newScreen !==
+                    loadingScreen) {
                     toast('App is under maintenance.', 'info');
                     return;
                 }
@@ -2058,25 +2054,26 @@
                 if (screenHistory.length > 0) {
                     const prev = screenHistory.pop();
                     switchScreen(prev.screen, prev.dir);
-                } else if (currentScreen !== dashScreen && currentScreen !== authScreen && currentScreen !== loadingScreen && currentScreen !== maintenanceScreen) {
+                } else if (currentScreen !== dashScreen && currentScreen !== authScreen && currentScreen !==
+                    loadingScreen && currentScreen !== maintenanceScreen) {
                     switchScreen(dashScreen, 'left');
                 }
             });
 
             function updateWalletUI() {
                 const bal = state.balance || 0;
-                walletDisplay.textContent = Math.floor(bal);
-                modalBalance.textContent = Math.floor(bal);
+                if (walletDisplay) walletDisplay.textContent = Math.floor(bal);
+                if (modalBalance) modalBalance.textContent = Math.floor(bal);
                 if (uoBalance) uoBalance.textContent = Math.floor(bal);
             }
 
             function updateStreakUI() {
-                streakCount.textContent = state.streak || 0;
+                if (streakCount) streakCount.textContent = state.streak || 0;
             }
 
             function updateDrawerUI() {
                 const u = state.currentUser;
-                if (u) {
+                if (u && drawerName) {
                     drawerName.textContent = u.name || 'Player';
                     drawerEmail.textContent = u.email || '';
                     drawerAvatar.textContent = (u.name || 'N')[0].toUpperCase();
@@ -2084,18 +2081,120 @@
                 }
             }
 
-            function setupGamesListener() {
+            function setupGlobalListeners() {
+                if (globalListenersSetup) return;
+                globalListenersSetup = true;
+
                 if (gamesListener) db.ref('games').off('value', gamesListener);
                 gamesListener = db.ref('games').on('value', (snap) => {
                     const data = snap.val();
-                    if (data) {
-                        state.games = Object.keys(data).map(key => ({ id: key, ...data[key] }));
-                    } else {
-                        state.games = [];
-                    }
+                    state.games = data ? Object.keys(data).map(key => ({ id: key, ...data[key] })) : [];
                     checkAndUpdateGameStatuses();
                     renderGames();
                     processPendingBets();
+                });
+
+                if (paymentMethodsListener) db.ref('paymentMethods').off('value', paymentMethodsListener);
+                paymentMethodsListener = db.ref('paymentMethods').on('value', (snap) => {
+                    const data = snap.val();
+                    state.paymentMethods = {
+                        deposit: data && data.deposit ? Object.keys(data.deposit).map(k => ({ id: k, ...data.deposit[
+                                k] })) : [],
+                        withdraw: data && data.withdraw ? Object.keys(data.withdraw).map(k => ({ id: k, ...data
+                                .withdraw[k] })) : []
+                    };
+                });
+
+                if (quickGameSettingsListener) db.ref('quickGameSettings').off('value', quickGameSettingsListener);
+                quickGameSettingsListener = db.ref('quickGameSettings').on('value', (snap) => {
+                    const data = snap.val();
+                    if (data && data.underOver7) {
+                        state.quickGameSettings.underOver7 = { ...state.quickGameSettings.underOver7, ...data
+                                .underOver7 };
+                    }
+                    updateQuickGameUI();
+                });
+
+                if (supportInfoListener) db.ref('supportInfo').off('value', supportInfoListener);
+                supportInfoListener = db.ref('supportInfo').on('value', (snap) => {
+                    const data = snap.val();
+                    if (data) state.supportInfo = data;
+                    updateSupportUI();
+                });
+
+                if (appSettingsListener) db.ref('settings').off('value', appSettingsListener);
+                appSettingsListener = db.ref('settings').on('value', (snap) => {
+                    const data = snap.val();
+                    if (data) state.appSettings = { ...state.appSettings, ...data };
+                    if (!data || data.minBet === undefined) state.appSettings.minBet = 15;
+                    updateWalletMinMaxUI();
+                });
+
+                if (maintenanceListener) db.ref('maintenanceMode').off('value', maintenanceListener);
+                maintenanceListener = db.ref('maintenanceMode').on('value', (snap) => {
+                    const data = snap.val();
+                    if (data && typeof data === 'object') {
+                        state.maintenanceMode = data.active === true;
+                        state.maintenanceMessage = data.message || 'Under Maintenance';
+                    } else if (typeof data === 'boolean') {
+                        state.maintenanceMode = data;
+                        state.maintenanceMessage = 'Under Maintenance';
+                    } else {
+                        state.maintenanceMode = false;
+                    }
+                    updateMaintenanceUI();
+                    if (state.maintenanceMode && state.currentUid && currentScreen !== maintenanceScreen &&
+                        currentScreen !== authScreen && currentScreen !== loadingScreen) {
+                        switchScreen(maintenanceScreen, 'right');
+                        screenHistory = [];
+                    }
+                    if (!state.maintenanceMode && currentScreen === maintenanceScreen && state.currentUid) {
+                        switchScreen(dashScreen, 'right');
+                        screenHistory = [];
+                    }
+                });
+            }
+
+            function setupUserSpecificListeners(uid) {
+                if (!uid) return;
+                if (betsListener) db.ref('bets/' + uid).off('value', betsListener);
+                betsListener = db.ref('bets/' + uid).on('value', (snap) => {
+                    const data = snap.val();
+                    const betsFromDB = data ? Object.keys(data).map(k => ({ id: k, ...data[k] })) : [];
+                    for (const b of betsFromDB) {
+                        const existingIdx = state.betHistory.findIndex(h => h.id === b.id);
+                        if (existingIdx !== -1) state.betHistory[existingIdx] = b;
+                        else state.betHistory.push(b);
+                    }
+                    if (currentScreen === profileScreen) loadProfile();
+                    if (currentScreen === sportBetHistoryScreen) renderSportBetHistory();
+                });
+
+                if (paymentRequestsListener) db.ref('paymentRequests/' + uid).off('value', paymentRequestsListener);
+                paymentRequestsListener = db.ref('paymentRequests/' + uid).on('value', (snap) => {
+                    const data = snap.val();
+                    state.paymentHistory = data ? Object.keys(data).map(k => ({ id: k, ...data[k] })) : [];
+                    if (currentScreen === historyScreen) renderPaymentHistory();
+                    if (currentScreen === profileScreen) loadProfile();
+                });
+
+                if (userDataListener) db.ref('users/' + uid).off('value', userDataListener);
+                userDataListener = db.ref('users/' + uid).on('value', (snap) => {
+                    const data = snap.val();
+                    if (data) {
+                        state.balance = data.balance ?? 0;
+                        state.streak = data.streak ?? 0;
+                        state.totalBets = data.totalBets ?? 0;
+                        state.wins = data.wins ?? 0;
+                        state.userId = data.userId || state.userId;
+                        if (!state.currentUser) state.currentUser = {};
+                        state.currentUser.name = data.name || state.currentUser.name || 'Player';
+                        state.currentUser.email = data.email || state.currentUser.email || '';
+                        updateWalletUI();
+                        updateStreakUI();
+                        updateDrawerUI();
+                        renderGames();
+                    }
                 });
             }
 
@@ -2123,125 +2222,56 @@
                 if (changed) renderGames();
             }
 
-            function setupPaymentMethodsListener() {
-                if (paymentMethodsListener) db.ref('paymentMethods').off('value', paymentMethodsListener);
-                paymentMethodsListener = db.ref('paymentMethods').on('value', (snap) => {
-                    const data = snap.val();
-                    if (data) {
-                        state.paymentMethods.deposit = data.deposit ? Object.keys(data.deposit).map(k => ({ id: k,
-                            ...data.deposit[k] })) : [];
-                        state.paymentMethods.withdraw = data.withdraw ? Object.keys(data.withdraw).map(k => ({ id: k,
-                            ...data.withdraw[k] })) : [];
-                    } else {
-                        state.paymentMethods = { deposit: [], withdraw: [] };
-                    }
-                });
-            }
-
-            function setupQuickGameSettingsListener() {
-                if (quickGameSettingsListener) db.ref('quickGameSettings').off('value', quickGameSettingsListener);
-                quickGameSettingsListener = db.ref('quickGameSettings').on('value', (snap) => {
-                    const data = snap.val();
-                    if (data) {
-                        if (data.underOver7) {
-                            state.quickGameSettings.underOver7 = { ...state.quickGameSettings.underOver7,
-                                ...data.underOver7 };
-                        }
-                    }
-                    updateQuickGameUI();
-                });
-            }
-
             function updateQuickGameUI() {
                 const qs = state.quickGameSettings.underOver7;
-                if (qs.enabled === false) {
-                    uoBetBtn.disabled = true;
-                    uoDisabledMsg.style.display = 'block';
+                if (qs && qs.enabled === false) {
+                    if (uoBetBtn) uoBetBtn.disabled = true;
+                    if (uoDisabledMsg) uoDisabledMsg.style.display = 'block';
                 } else {
-                    uoBetBtn.disabled = false;
-                    uoDisabledMsg.style.display = 'none';
+                    if (uoBetBtn) uoBetBtn.disabled = false;
+                    if (uoDisabledMsg) uoDisabledMsg.style.display = 'none';
                 }
             }
 
-            function setupSupportInfoListener() {
-                if (supportInfoListener) db.ref('supportInfo').off('value', supportInfoListener);
-                supportInfoListener = db.ref('supportInfo').on('value', (snap) => {
-                    const data = snap.val();
-                    if (data) {
-                        state.supportInfo = data;
-                    }
-                    updateSupportUI();
-                });
-            }
-
-            function setupAppSettingsListener() {
-                if (appSettingsListener) db.ref('settings').off('value', appSettingsListener);
-                appSettingsListener = db.ref('settings').on('value', (snap) => {
-                    const data = snap.val();
-                    if (data) {
-                        state.appSettings = { ...state.appSettings, ...data };
-                    }
-                    if (!data || data.minBet === undefined) {
-                        state.appSettings.minBet = 15;
-                    }
-                    updateWalletMinMaxUI();
-                });
-            }
-
-            function setupMaintenanceListener() {
-                if (maintenanceListener) db.ref('maintenanceMode').off('value', maintenanceListener);
-                maintenanceListener = db.ref('maintenanceMode').on('value', (snap) => {
-                    const data = snap.val();
-                    if (data && typeof data === 'object') {
-                        state.maintenanceMode = data.active === true;
-                        state.maintenanceMessage = data.message || 'Under Maintenance';
-                    } else if (typeof data === 'boolean') {
-                        state.maintenanceMode = data;
-                        state.maintenanceMessage = 'Under Maintenance';
+            function updateSupportUI() {
+                const s = state.supportInfo;
+                if (supportPhone) {
+                    const phone = s.phone || 'Not set';
+                    supportPhone.innerHTML = isUrl(phone) ? `<a href="${phone}" target="_blank" rel="noopener">${phone}</a>` :
+                        phone;
+                }
+                if (supportEmail) {
+                    const email = s.email || 'Not set';
+                    supportEmail.innerHTML = isUrl(email) ?
+                        `<a href="${email}" target="_blank" rel="noopener">${email}</a>` : email;
+                }
+                if (supportMessenger) {
+                    const msg = s.messenger || 'Not set';
+                    supportMessenger.innerHTML = isUrl(msg) ? `<a href="${msg}" target="_blank" rel="noopener">${msg}</a>` :
+                        msg;
+                }
+                if (supportInfoEl) supportInfoEl.textContent = s.info || 'No additional info.';
+                if (openTelegramBtn) {
+                    if (s.telegramLink && s.telegramLink.trim()) {
+                        openTelegramBtn.style.display = 'inline-block';
+                        openTelegramBtn.onclick = function() { window.open(s.telegramLink, '_blank', 'noopener'); };
                     } else {
-                        state.maintenanceMode = false;
+                        openTelegramBtn.style.display = 'none';
                     }
-                    updateMaintenanceUI();
-                    if (state.maintenanceMode && state.currentUid && currentScreen !== maintenanceScreen && currentScreen !== authScreen && currentScreen !== loadingScreen) {
-                        switchScreen(maintenanceScreen, 'right');
-                        screenHistory = [];
+                }
+                if (openWhatsappBtn) {
+                    if (s.whatsappLink && s.whatsappLink.trim()) {
+                        openWhatsappBtn.style.display = 'inline-block';
+                        openWhatsappBtn.onclick = function() { window.open(s.whatsappLink, '_blank', 'noopener'); };
+                    } else {
+                        openWhatsappBtn.style.display = 'none';
                     }
-                    if (!state.maintenanceMode && currentScreen === maintenanceScreen && state.currentUid) {
-                        switchScreen(dashScreen, 'right');
-                        screenHistory = [];
-                    }
-                });
+                }
             }
 
-            function setupUserBetsListener(uid) {
-                if (!uid) return;
-                if (betsListener) db.ref('bets/' + uid).off('value', betsListener);
-                betsListener = db.ref('bets/' + uid).on('value', (snap) => {
-                    const data = snap.val();
-                    const betsFromDB = data ? Object.keys(data).map(k => ({ id: k, ...data[k] })) : [];
-                    // Merge into state.betHistory without duplicates
-                    for (const b of betsFromDB) {
-                        const existingIdx = state.betHistory.findIndex(h => h.id === b.id);
-                        if (existingIdx !== -1) {
-                            state.betHistory[existingIdx] = b;
-                        } else {
-                            state.betHistory.push(b);
-                        }
-                    }
-                    if (currentScreen === profileScreen) loadProfile();
-                    if (currentScreen === sportBetHistoryScreen) renderSportBetHistory();
-                });
-            }
-
-            function setupPaymentRequestsListener(uid) {
-                if (!uid) return;
-                if (paymentRequestsListener) db.ref('paymentRequests/' + uid).off('value', paymentRequestsListener);
-                paymentRequestsListener = db.ref('paymentRequests/' + uid).on('value', (snap) => {
-                    const data = snap.val();
-                    state.paymentHistory = data ? Object.keys(data).map(k => ({ id: k, ...data[k] })) : [];
-                    if (currentScreen === historyScreen) renderPaymentHistory();
-                    if (currentScreen === profileScreen) loadProfile();
-                });
+            function isUrl(str) {
+                if (!str) return false;
+                return /^(https?:\/\/|tg:\/\/|mailto:)/i.test(str.trim());
             }
 
             function updateMaintenanceUI() {
@@ -2267,70 +2297,6 @@
                 if (slipAmount) slipAmount.min = state.appSettings.minBet || 15;
             }
 
-            function updateSupportUI() {
-                const s = state.supportInfo;
-                if (supportPhone) {
-                    const phone = s.phone || 'Not set';
-                    supportPhone.innerHTML = isUrl(phone) ? `<a href="${phone}" target="_blank" rel="noopener">${phone}</a>` :
-                        phone;
-                }
-                if (supportEmail) {
-                    const email = s.email || 'Not set';
-                    supportEmail.innerHTML = isUrl(email) ?
-                        `<a href="${email}" target="_blank" rel="noopener">${email}</a>` : email;
-                }
-                if (supportMessenger) {
-                    const msg = s.messenger || 'Not set';
-                    supportMessenger.innerHTML = isUrl(msg) ? `<a href="${msg}" target="_blank" rel="noopener">${msg}</a>` :
-                        msg;
-                }
-                if (supportInfoEl) supportInfoEl.textContent = s.info || 'No additional info.';
-
-                if (openTelegramBtn) {
-                    if (s.telegramLink && s.telegramLink.trim()) {
-                        openTelegramBtn.style.display = 'inline-block';
-                        openTelegramBtn.onclick = function() { window.open(s.telegramLink, '_blank', 'noopener'); };
-                    } else {
-                        openTelegramBtn.style.display = 'none';
-                    }
-                }
-                if (openWhatsappBtn) {
-                    if (s.whatsappLink && s.whatsappLink.trim()) {
-                        openWhatsappBtn.style.display = 'inline-block';
-                        openWhatsappBtn.onclick = function() { window.open(s.whatsappLink, '_blank', 'noopener'); };
-                    } else {
-                        openWhatsappBtn.style.display = 'none';
-                    }
-                }
-            }
-
-            function isUrl(str) {
-                if (!str) return false;
-                return /^(https?:\/\/|tg:\/\/|mailto:)/i.test(str.trim());
-            }
-
-            function setupUserDataListener(uid) {
-                if (userDataListener) db.ref('users/' + uid).off('value', userDataListener);
-                if (!uid) return;
-                userDataListener = db.ref('users/' + uid).on('value', (snap) => {
-                    const data = snap.val();
-                    if (data) {
-                        state.balance = data.balance ?? 0;
-                        state.streak = data.streak ?? 0;
-                        state.totalBets = data.totalBets ?? 0;
-                        state.wins = data.wins ?? 0;
-                        state.userId = data.userId || state.userId;
-                        if (!state.currentUser) state.currentUser = {};
-                        state.currentUser.name = data.name || state.currentUser.name || 'Player';
-                        state.currentUser.email = data.email || state.currentUser.email || '';
-                        updateWalletUI();
-                        updateStreakUI();
-                        updateDrawerUI();
-                        renderGames();
-                    }
-                });
-            }
-
             async function processPendingBets() {
                 if (!state.currentUid || state.isAnimating) return;
                 const uid = state.currentUid;
@@ -2344,9 +2310,7 @@
                     const game = state.games.find(g => g.id === bet.gameId);
                     if (!game) continue;
                     if (game.status === 'closed' && game.winner) {
-                        const userChoice = bet.choice;
-                        const winner = game.winner;
-                        const isWin = (userChoice === winner);
+                        const isWin = (bet.choice === game.winner);
                         let newStatus, payout;
                         if (isWin) {
                             newStatus = 'won';
@@ -2359,11 +2323,7 @@
                             payout = 0;
                             state.streak = 0;
                         }
-                        const updates = {
-                            status: newStatus,
-                            payout: payout,
-                            resolvedAt: new Date().toLocaleString()
-                        };
+                        const updates = { status: newStatus, payout: payout, resolvedAt: new Date().toLocaleString() };
                         await db.ref('bets/' + uid + '/' + betId).update(updates);
                         const localBet = state.betHistory.find(b => b.id === betId);
                         if (localBet) {
@@ -2396,7 +2356,11 @@
                 });
             }
 
+            // ── START GLOBAL LISTENERS IMMEDIATELY ──
+            setupGlobalListeners();
+
             auth.onAuthStateChanged(async (firebaseUser) => {
+                state.authReady = true;
                 if (firebaseUser) {
                     const uid = firebaseUser.uid;
                     state.currentUid = uid;
@@ -2429,36 +2393,31 @@
                         email: userData.email || '',
                         uid: uid,
                     };
-                    setupUserDataListener(uid);
-                    setupUserBetsListener(uid);
-                    setupPaymentRequestsListener(uid);
+                    setupUserSpecificListeners(uid);
                     updateDrawerUI();
                     updateWalletUI();
                     updateStreakUI();
-                    setupGamesListener();
-                    setupPaymentMethodsListener();
-                    setupQuickGameSettingsListener();
-                    setupSupportInfoListener();
-                    setupAppSettingsListener();
-                    setupMaintenanceListener();
-                    updateWalletMinMaxUI();
                     updateMaintenanceUI();
                     updateQuickGameUI();
+                    updateWalletMinMaxUI();
 
                     if (state.maintenanceMode) {
-                        if (currentScreen !== maintenanceScreen && currentScreen !== authScreen && currentScreen !== loadingScreen) {
-                            switchScreen(maintenanceScreen, 'right');
-                            screenHistory = [];
-                        }
+                        if (currentScreen === maintenanceScreen || currentScreen === authScreen || currentScreen ===
+                            loadingScreen) return;
+                        switchScreen(maintenanceScreen, 'right');
+                        screenHistory = [];
                     } else {
-                        if (currentScreen === authScreen || currentScreen === loadingScreen || currentScreen === maintenanceScreen) {
+                        if (currentScreen === loadingScreen) {
                             loadingScreen.classList.add('fade-out');
                             setTimeout(() => { switchScreen(dashScreen, 'right');
                                 screenHistory = []; }, 400);
+                        } else if (currentScreen === authScreen || currentScreen === maintenanceScreen) {
+                            switchScreen(dashScreen, 'right');
+                            screenHistory = [];
                         }
                     }
                     toast('Welcome, ' + (userData.name || 'Player') + '!', 'success');
-                    setTimeout(processPendingBets, 1500);
+                    setTimeout(processPendingBets, 400);
                 } else {
                     state.currentUser = null;
                     state.currentUid = null;
@@ -2485,7 +2444,11 @@
                     updateWalletUI();
                     updateStreakUI();
                     screenHistory = [];
-                    if (currentScreen !== loadingScreen && currentScreen !== authScreen) {
+                    if (currentScreen === loadingScreen) {
+                        loadingScreen.classList.add('fade-out');
+                        setTimeout(() => { switchScreen(authScreen, 'right');
+                            screenHistory = []; }, 400);
+                    } else if (currentScreen !== authScreen) {
                         switchScreen(authScreen, 'left');
                         toast('Signed out.', 'info');
                     }
@@ -2569,11 +2532,35 @@
                     gamesToShow = state.games.filter(g => g.status === 'live' || g.status === 'upcoming');
                     feedTitle.textContent = 'Live & Upcoming';
                 } else {
-                    gamesToShow = state.games.filter(g => g.category === category && (g.status === 'live' || g.status ===
-                        'upcoming'));
-                    const sport = gamesToShow[0]?.sport || category;
-                    feedTitle.textContent = sport;
+                    gamesToShow = state.games.filter(g => {
+                        const cat = (g.category || g.sport || '').toLowerCase();
+                        return cat === category && (g.status === 'live' || g.status === 'upcoming');
+                    });
+                    const labelMap = {
+                        football: 'Football',
+                        cricket: 'Cricket',
+                        basketball: 'Basketball',
+                        tennis: 'Tennis',
+                        mma: 'MMA'
+                    };
+                    feedTitle.textContent = labelMap[category] || category;
                 }
+
+                // ── ম্যাচ সাজানোর যুক্তি (Match Sorting Logic) ──
+                gamesToShow.sort((a, b) => {
+                    const statusOrder = { 'upcoming': 0, 'live': 1, 'closed': 2 };
+                    const statusDiff = (statusOrder[a.status] || 0) - (statusOrder[b.status] || 0);
+                    if (statusDiff !== 0) return statusDiff;
+
+                    const timeA = new Date(a.matchTime).getTime() || 0;
+                    const timeB = new Date(b.matchTime).getTime() || 0;
+
+                    if (a.status === 'upcoming') return timeA - timeB; // আসন্ন ম্যাচ: শীঘ্রই শুরু হবে
+                    if (a.status === 'live') return timeA - timeB; // লাইভ ম্যাচ: আগে শুরু হয়েছে
+                    if (a.status === 'closed') return timeB - timeA; // শেষ ম্যাচ: সম্প্রতি শেষ
+                    return 0;
+                });
+
                 if (gamesToShow.length === 0) {
                     gameContainer.innerHTML =
                         '<div style="text-align:center;padding:40px 0;color:#4a5680;">No games available.</div>';
@@ -2585,7 +2572,7 @@
                     const is1 = sel === '1',
                         isX = sel === 'X',
                         is2 = sel === '2';
-                    const isClosed = g.status === 'closed' || g.status === 'live';
+                    const isClosed = g.status === 'live' || g.status === 'closed';
                     const disabledAttr = isClosed ? 'disabled' : '';
                     let statusBadge = '';
                     if (g.status === 'live') statusBadge = '<span class="game-live">LIVE</span>';
@@ -2792,7 +2779,7 @@
                     uoChoice = this.dataset.choice;
                 });
             });
-            uoChoices[0]?.classList.add('selected');
+            if (uoChoices[0]) uoChoices[0].classList.add('selected');
 
             function getLosingDice(choice) {
                 let d1, d2, sum;
@@ -2826,7 +2813,7 @@
                 if (!state.currentUid) { toast('Please sign in first.', 'error'); return; }
                 if (state.isAnimating) return;
                 const qs = state.quickGameSettings.underOver7;
-                if (!qs.enabled) { toast('Quick game is temporarily disabled.', 'error'); return; }
+                if (!qs || !qs.enabled) { toast('Quick game is temporarily disabled.', 'error'); return; }
                 const amount = parseInt(uoAmount.value, 10);
                 const minBet = state.appSettings.minBet || 15;
                 if (!amount || amount < minBet) { toast('Minimum bet is BDT' + minBet + '.', 'error'); return; }
@@ -2846,12 +2833,10 @@
                 else if (uoChoice === 'seven') odd = 5.7;
                 else odd = 2.3;
 
-                // Decide win based on winPercentage (overall probability)
                 const winPercentage = qs.winPercentage ?? 50;
                 let finalWin = (Math.random() * 100) < winPercentage;
                 if (qs.forceWin) {
                     finalWin = true;
-                    // Reset forceWin after one use
                     db.ref('quickGameSettings/underOver7/forceWin').set(false);
                     state.quickGameSettings.underOver7.forceWin = false;
                 }
@@ -2913,7 +2898,7 @@
                     updateStreakUI();
                     state.isAnimating = false;
                     uoBetBtn.disabled = false;
-                }, 900);
+                }, 750);
             });
 
             function openDrawer() { drawer.classList.add('open');
@@ -3031,19 +3016,12 @@
                     for (let i = bets.length - 1; i >= Math.max(0, bets.length - 50); i--) {
                         const b = bets[i];
                         let statusText, statusClass;
-                        if (b.status === 'pending') {
-                            statusText = 'Pending';
-                            statusClass = 'pending';
-                        } else if (b.status === 'won') {
-                            statusText = 'Won BDT' + (b.payout || 0);
-                            statusClass = 'won';
-                        } else if (b.status === 'lost') {
-                            statusText = 'Lost';
-                            statusClass = 'lost';
-                        } else {
-                            statusText = b.win ? 'Won BDT' + (b.payout || 0) : 'Lost';
-                            statusClass = b.win ? 'won' : 'lost';
-                        }
+                        if (b.status === 'pending') { statusText = 'Pending';
+                            statusClass = 'pending'; } else if (b.status === 'won') { statusText = 'Won BDT' + (b.payout ||
+                                0);
+                            statusClass = 'won'; } else if (b.status === 'lost') { statusText = 'Lost';
+                            statusClass = 'lost'; } else { statusText = b.win ? 'Won BDT' + (b.payout || 0) : 'Lost';
+                            statusClass = b.win ? 'won' : 'lost'; }
                         html += `
                   <div class="payment-item">
                     <div class="left">
@@ -3280,11 +3258,11 @@
                 });
 
                 if (sportBets.length === 0) {
-                    sportBetList.innerHTML = '<div style="text-align:center;padding:40px 0;color:#4a5680;">No sport bets yet.</div>';
+                    sportBetList.innerHTML =
+                        '<div style="text-align:center;padding:40px 0;color:#4a5680;">No sport bets yet.</div>';
                     return;
                 }
 
-                // Ensure no duplicates by ID
                 const seenIds = new Set();
                 const uniqueBets = [];
                 for (const b of sportBets) {
@@ -3352,36 +3330,35 @@
                 if (e.target === this) betDetailModal.classList.remove('show');
             });
 
+            // ── দ্রুত লোডিং অ্যানিমেশন (Fast Loading Animation) ──
             let loadProgress = 0;
             const bar = document.getElementById('loadBar');
             const percent = document.getElementById('loadPercent');
             const loadInterval = setInterval(() => {
-                loadProgress += 2 + Math.random() * 4;
-                if (loadProgress > 100) loadProgress = 100;
-                if (bar) bar.style.width = loadProgress + '%';
-                if (percent) percent.textContent = Math.floor(loadProgress) + '%';
-                if (loadProgress >= 100) {
-                    clearInterval(loadInterval);
-                    setupGamesListener();
-                    setupPaymentMethodsListener();
-                    setupQuickGameSettingsListener();
-                    setupSupportInfoListener();
-                    setupAppSettingsListener();
-                    setupMaintenanceListener();
-                    updateWalletMinMaxUI();
-                    updateMaintenanceUI();
-                    updateQuickGameUI();
-                    setTimeout(() => {
-                        loadingScreen.classList.add('fade-out');
-                        setTimeout(() => {
-                            if (!auth.currentUser) {
-                                switchScreen(authScreen, 'right');
-                                screenHistory = [];
+                if (state.authReady) {
+                    if (loadProgress < 100) {
+                        loadProgress += 20;
+                        if (loadProgress > 100) loadProgress = 100;
+                        if (bar) bar.style.width = loadProgress + '%';
+                        if (percent) percent.textContent = Math.floor(loadProgress) + '%';
+                        if (loadProgress >= 100) {
+                            clearInterval(loadInterval);
+                            if (!state.currentUid && currentScreen === loadingScreen) {
+                                loadingScreen.classList.add('fade-out');
+                                setTimeout(() => { switchScreen(authScreen, 'right');
+                                    screenHistory = []; }, 400);
                             }
-                        }, 500);
-                    }, 500);
+                        }
+                    }
+                } else {
+                    if (loadProgress < 85) {
+                        loadProgress += 6;
+                        if (loadProgress > 85) loadProgress = 85;
+                        if (bar) bar.style.width = loadProgress + '%';
+                        if (percent) percent.textContent = Math.floor(loadProgress) + '%';
+                    }
                 }
-            }, 120);
+            }, 70);
 
             window.__nexus = { state, db, auth, renderGames, navigateTo, goBack };
 
