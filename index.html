@@ -1,0 +1,3406 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>NexusPlay – ৳ Betting</title>
+
+    <script src="https://www.gstatic.com/firebasejs/11.0.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/11.0.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/11.0.1/firebase-database-compat.js"></script>
+
+    <style>
+        :root {
+            --bg: #0b0e17;
+            --surface: rgba(20, 27, 43, 0.7);
+            --border: rgba(108, 92, 231, 0.2);
+            --text: #e0e6f0;
+            --accent: #6c5ce7;
+            --accent-light: #a29bfe;
+            --pink: #fd79a8;
+            --muted: #7f8fa6;
+            --input-bg: #121828;
+            --input-border: #1e2538;
+            --success: #00b894;
+            --warning: #fdcb6e;
+            --danger: #fd79a8;
+            --radius: 16px;
+            --radius-sm: 12px;
+            --transition: 0.3s ease;
+        }
+
+        body.light {
+            --bg: #f0f2f8;
+            --surface: rgba(255, 255, 255, 0.85);
+            --border: rgba(108, 92, 231, 0.2);
+            --text: #1a1e2e;
+            --input-bg: #ffffff;
+            --input-border: #ccc;
+            --muted: #636e72;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+        }
+
+        body {
+            background: var(--bg);
+            color: var(--text);
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            transition: background 0.3s;
+        }
+
+        ::-webkit-scrollbar {
+            width: 4px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: var(--accent);
+            border-radius: 4px;
+        }
+
+        #app {
+            flex: 1;
+            position: relative;
+            overflow: hidden;
+        }
+        .screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            pointer-events: none;
+            transform: translateX(100%);
+            transition: opacity 0.4s ease, transform 0.4s ease;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            background: var(--bg);
+        }
+        .screen.active {
+            opacity: 1;
+            pointer-events: all;
+            transform: translateX(0);
+        }
+        .screen.inactive-right {
+            transform: translateX(100%);
+        }
+        .screen.inactive-left {
+            transform: translateX(-100%);
+        }
+
+        #loading-screen {
+            background: radial-gradient(ellipse at center, #141b2b, #0b0e17);
+            z-index: 200;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            overflow: hidden;
+        }
+        #loading-screen.fade-out {
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.6s ease;
+        }
+        .loader-logo .nexus-icon {
+            width: 100px;
+            height: 100px;
+            margin: 0 auto 24px;
+            background: linear-gradient(135deg, #6c5ce7, #a29bfe, #fd79a8);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 44px;
+            font-weight: 900;
+            color: #fff;
+            box-shadow: 0 0 60px rgba(108, 92, 231, 0.5);
+            animation: pulseGlow 2s ease-in-out infinite alternate;
+        }
+        @keyframes pulseGlow {
+            0% {
+                box-shadow: 0 0 30px rgba(108, 92, 231, 0.3);
+            }
+            100% {
+                box-shadow: 0 0 80px rgba(108, 92, 231, 0.7);
+            }
+        }
+        .loader-title {
+            font-size: 32px;
+            font-weight: 800;
+            background: linear-gradient(135deg, #6c5ce7, #a29bfe, #fd79a8);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            letter-spacing: 2px;
+        }
+        .loader-sub {
+            color: #7f8fa6;
+            font-size: 13px;
+            letter-spacing: 4px;
+            margin-top: 6px;
+        }
+        .loader-bar-wrap {
+            width: 200px;
+            height: 3px;
+            background: #1e2538;
+            border-radius: 4px;
+            margin: 28px auto 0;
+            overflow: hidden;
+        }
+        .loader-bar {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, #6c5ce7, #fd79a8);
+            border-radius: 4px;
+            animation: loadBar 2.2s ease-in-out forwards;
+        }
+        @keyframes loadBar {
+            0% {
+                width: 0%;
+            }
+            80% {
+                width: 90%;
+            }
+            100% {
+                width: 100%;
+            }
+        }
+        .loader-percent {
+            color: #7f8fa6;
+            font-size: 13px;
+            margin-top: 10px;
+        }
+
+        #auth-screen {
+            background: radial-gradient(ellipse at top left, #141b2b, #0b0e17);
+            justify-content: center;
+            align-items: center;
+            padding: 24px;
+        }
+        .auth-box {
+            width: 100%;
+            max-width: 380px;
+            background: var(--surface);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--border);
+            border-radius: 24px;
+            padding: 36px 28px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
+        }
+        .auth-box .mini-logo {
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 28px;
+            font-weight: 800;
+            background: linear-gradient(135deg, #6c5ce7, #fd79a8);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .auth-tabs {
+            display: flex;
+            gap: 0;
+            margin-bottom: 24px;
+            border-radius: 12px;
+            overflow: hidden;
+            background: #121828;
+        }
+        .auth-tab {
+            flex: 1;
+            padding: 12px;
+            text-align: center;
+            font-weight: 600;
+            font-size: 14px;
+            color: #7f8fa6;
+            cursor: pointer;
+            transition: all var(--transition);
+            border: none;
+            background: transparent;
+        }
+        .auth-tab.active {
+            background: #6c5ce7;
+            color: #fff;
+        }
+        .auth-form {
+            display: none;
+            flex-direction: column;
+            gap: 16px;
+        }
+        .auth-form.show {
+            display: flex;
+        }
+        .auth-form input {
+            padding: 14px 16px;
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--input-border);
+            background: var(--input-bg);
+            color: var(--text);
+            font-size: 15px;
+            outline: none;
+            transition: border var(--transition);
+        }
+        .auth-form input:focus {
+            border-color: var(--accent);
+        }
+        .auth-form input::placeholder {
+            color: #4a5680;
+        }
+        .auth-btn {
+            padding: 14px;
+            border: none;
+            border-radius: var(--radius-sm);
+            background: linear-gradient(135deg, #6c5ce7, #a29bfe);
+            color: #fff;
+            font-weight: 700;
+            font-size: 16px;
+            cursor: pointer;
+            transition: transform var(--transition), box-shadow var(--transition);
+        }
+        .auth-btn:active {
+            transform: scale(0.97);
+        }
+        .auth-btn:disabled {
+            opacity: 0.5;
+            pointer-events: none;
+        }
+        .auth-error {
+            color: #fd79a8;
+            font-size: 13px;
+            text-align: center;
+            min-height: 20px;
+        }
+        .auth-loading {
+            color: #a29bfe;
+            font-size: 13px;
+            text-align: center;
+            min-height: 20px;
+        }
+
+        .dash-header {
+            background: rgba(11, 14, 23, 0.9);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            padding: 12px 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid rgba(108, 92, 231, 0.15);
+            position: sticky;
+            top: 0;
+            z-index: 50;
+        }
+        body.light .dash-header {
+            background: rgba(255, 255, 255, 0.9);
+        }
+        .menu-btn {
+            background: none;
+            border: none;
+            color: #a29bfe;
+            font-size: 24px;
+            cursor: pointer;
+            padding: 6px;
+            border-radius: var(--radius-sm);
+            transition: background var(--transition);
+        }
+        .menu-btn:hover {
+            background: rgba(108, 92, 231, 0.15);
+        }
+        .dash-title {
+            font-size: 20px;
+            font-weight: 700;
+            background: linear-gradient(135deg, #6c5ce7, #fd79a8);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            letter-spacing: 1px;
+        }
+        .wallet-pill {
+            background: linear-gradient(135deg, #6c5ce7, #a29bfe);
+            color: #fff;
+            padding: 8px 14px;
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 600;
+            font-size: 14px;
+            cursor: pointer;
+            transition: transform var(--transition), box-shadow var(--transition);
+            box-shadow: 0 4px 15px rgba(108, 92, 231, 0.3);
+            min-width: 100px;
+            justify-content: center;
+        }
+        .wallet-pill:active {
+            transform: scale(0.95);
+        }
+        .wallet-pill .coin {
+            font-size: 16px;
+        }
+
+        .filter-bar {
+            display: flex;
+            gap: 8px;
+            padding: 12px 16px;
+            overflow-x: auto;
+            flex-shrink: 0;
+            background: var(--bg);
+            border-bottom: 1px solid rgba(108, 92, 231, 0.08);
+        }
+        .filter-bar::-webkit-scrollbar {
+            height: 2px;
+        }
+        .filter-btn {
+            flex-shrink: 0;
+            padding: 8px 18px;
+            border-radius: 20px;
+            border: 1px solid rgba(108, 92, 231, 0.2);
+            background: transparent;
+            color: #a29bfe;
+            font-weight: 600;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all var(--transition);
+            white-space: nowrap;
+        }
+        .filter-btn.active {
+            background: #6c5ce7;
+            border-color: #6c5ce7;
+            color: #fff;
+            box-shadow: 0 4px 12px rgba(108, 92, 231, 0.3);
+        }
+        .filter-btn:hover {
+            background: rgba(108, 92, 231, 0.2);
+        }
+        body.light .filter-btn {
+            color: #2d3436;
+            border-color: #b2bec3;
+            background: #ffffff;
+        }
+        body.light .filter-btn.active {
+            background: #6c5ce7;
+            border-color: #6c5ce7;
+            color: #fff;
+        }
+
+        .sports-feed {
+            flex: 1;
+            overflow-y: auto;
+            padding: 16px 16px 100px;
+        }
+        .feed-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 16px;
+        }
+        .feed-header h2 {
+            font-size: 18px;
+            font-weight: 700;
+        }
+        .streak-badge {
+            background: rgba(253, 121, 168, 0.15);
+            color: #fd79a8;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .game-card {
+            background: rgba(20, 27, 43, 0.6);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(108, 92, 231, 0.12);
+            border-radius: var(--radius);
+            padding: 18px 16px;
+            margin-bottom: 14px;
+            transition: transform 0.2s ease;
+        }
+        body.light .game-card {
+            background: rgba(255, 255, 255, 0.85);
+        }
+        .game-card:active {
+            transform: scale(0.98);
+        }
+        .game-card .game-top {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+        .game-card .game-icon {
+            font-size: 28px;
+        }
+        .game-card .game-sport {
+            font-weight: 700;
+            font-size: 16px;
+            color: var(--text);
+        }
+        .game-card .game-live {
+            background: #fd79a8;
+            color: #fff;
+            font-size: 10px;
+            font-weight: 700;
+            padding: 4px 10px;
+            border-radius: 20px;
+            letter-spacing: 1px;
+            animation: pulseLive 1.5s ease-in-out infinite;
+        }
+        @keyframes pulseLive {
+            0%,
+            100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0.5;
+            }
+        }
+        .game-card .game-status-upcoming {
+            color: #7f8fa6;
+            font-size: 11px;
+            font-weight: 600;
+            background: rgba(127, 143, 166, 0.15);
+            padding: 4px 10px;
+            border-radius: 20px;
+        }
+        .game-card .game-status-closed {
+            color: #e17055;
+            font-size: 11px;
+            font-weight: 600;
+            background: rgba(225, 112, 85, 0.2);
+            padding: 4px 10px;
+            border-radius: 20px;
+        }
+        .game-card .teams {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+            margin: 10px 0 14px;
+        }
+        .game-card .team {
+            font-weight: 600;
+            font-size: 13px;
+            color: var(--text);
+            flex: 1;
+            text-align: center;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        .game-card .team-img {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid rgba(108, 92, 231, 0.3);
+            flex-shrink: 0;
+            background: #1e2538;
+        }
+        .game-card .vs {
+            color: #4a5680;
+            font-weight: 800;
+            font-size: 12px;
+            flex-shrink: 0;
+        }
+        .game-card .odds-row {
+            display: flex;
+            gap: 10px;
+        }
+        .game-card .odd-btn {
+            flex: 1;
+            padding: 10px 6px;
+            border-radius: var(--radius-sm);
+            border: 1px solid rgba(108, 92, 231, 0.2);
+            background: rgba(18, 24, 40, 0.6);
+            color: #a29bfe;
+            font-weight: 600;
+            font-size: 13px;
+            text-align: center;
+            cursor: pointer;
+            transition: all var(--transition);
+        }
+        .game-card .odd-btn.selected {
+            background: #6c5ce7;
+            border-color: #6c5ce7;
+            color: #fff;
+            box-shadow: 0 4px 15px rgba(108, 92, 231, 0.3);
+        }
+        .game-card .odd-btn:disabled {
+            opacity: 0.4;
+            pointer-events: none;
+            cursor: not-allowed;
+            background: rgba(30, 37, 56, 0.4);
+            border-color: rgba(108, 92, 231, 0.08);
+            color: #4a5680;
+        }
+        .game-card .odd-btn .label {
+            display: block;
+            font-size: 9px;
+            color: #7f8fa6;
+            margin-bottom: 2px;
+        }
+        .game-card .odd-btn.selected .label {
+            color: rgba(255, 255, 255, 0.7);
+        }
+        .game-card .odd-btn .value {
+            font-size: 15px;
+        }
+        .game-card .match-time {
+            font-size: 12px;
+            color: #7f8fa6;
+            margin-top: 8px;
+            text-align: center;
+        }
+        .game-card .countdown {
+            font-weight: 600;
+            color: #a29bfe;
+        }
+        .game-card .match-img {
+            width: 100%;
+            max-height: 120px;
+            object-fit: cover;
+            border-radius: 8px;
+            margin-bottom: 8px;
+        }
+        .game-card .closed-banner {
+            display: inline-block;
+            background: #e17055;
+            color: #fff;
+            font-size: 10px;
+            font-weight: 700;
+            padding: 3px 8px;
+            border-radius: 10px;
+            margin-top: 4px;
+        }
+
+        /* Light theme overrides for game cards */
+        body.light .game-card .team,
+        body.light .game-card .game-sport,
+        body.light .game-card .game-top span,
+        body.light .game-card .match-time,
+        body.light .game-card .countdown,
+        body.light .game-card .odd-btn .label {
+            color: #1a1e2e;
+        }
+        body.light .game-card .vs {
+            color: #636e72;
+        }
+        body.light .game-card .odd-btn {
+            color: #2d3436;
+            border-color: #b2bec3;
+            background: #f5f6fa;
+        }
+        body.light .game-card .odd-btn.selected {
+            background: #6c5ce7;
+            border-color: #6c5ce7;
+            color: #fff;
+        }
+        body.light .game-card .odd-btn:disabled {
+            background: #dfe6e9;
+            border-color: #b2bec3;
+            color: #636e72;
+        }
+
+        .betting-slip {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: #141b2b;
+            border-top: 1px solid rgba(108, 92, 231, 0.2);
+            border-radius: 20px 20px 0 0;
+            padding: 18px 20px 24px;
+            z-index: 600;
+            transform: translateY(100%);
+            transition: transform 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+            box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.5);
+            max-height: 60vh;
+            overflow-y: auto;
+        }
+        body.light .betting-slip {
+            background: #f0f2f8;
+        }
+        .betting-slip.open {
+            transform: translateY(0);
+        }
+        .betting-slip .slip-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+            font-weight: 700;
+            font-size: 18px;
+        }
+        .betting-slip .slip-header button {
+            background: none;
+            border: none;
+            color: #7f8fa6;
+            font-size: 22px;
+            cursor: pointer;
+        }
+        .betting-slip .slip-body {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        .betting-slip .slip-body input {
+            padding: 14px 16px;
+            border-radius: var(--radius-sm);
+            border: 1px solid #1e2538;
+            background: #121828;
+            color: #e0e6f0;
+            font-size: 16px;
+            outline: none;
+            width: 100%;
+        }
+        .betting-slip .slip-body input:focus {
+            border-color: #6c5ce7;
+        }
+        .betting-slip .slip-body .potential {
+            font-size: 18px;
+            font-weight: 700;
+            color: #00b894;
+        }
+        .betting-slip .slip-body .place-btn {
+            padding: 14px;
+            border: none;
+            border-radius: var(--radius-sm);
+            background: linear-gradient(135deg, #6c5ce7, #a29bfe);
+            color: #fff;
+            font-weight: 700;
+            font-size: 16px;
+            cursor: pointer;
+            transition: transform var(--transition);
+        }
+        .betting-slip .slip-body .place-btn:active {
+            transform: scale(0.97);
+        }
+        .betting-slip .slip-body .place-btn:disabled {
+            opacity: 0.4;
+            pointer-events: none;
+        }
+        .slip-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.4);
+            z-index: 599;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity var(--transition);
+        }
+        .slip-overlay.show {
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        #quickgame-screen {
+            background: var(--bg);
+            padding: 24px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .quickgame-box {
+            width: 100%;
+            max-width: 400px;
+            background: var(--surface);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--border);
+            border-radius: 24px;
+            padding: 24px;
+            text-align: center;
+        }
+        .quickgame-box h2 {
+            font-size: 20px;
+            font-weight: 800;
+            margin-bottom: 4px;
+            background: linear-gradient(135deg, #fd79a8, #6c5ce7);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .quickgame-box .sub {
+            color: #7f8fa6;
+            margin-bottom: 16px;
+        }
+        .quickgame-box .choices {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            margin-bottom: 16px;
+            flex-wrap: wrap;
+        }
+        .quickgame-box .choices button {
+            padding: 10px 24px;
+            border-radius: 30px;
+            border: 1px solid rgba(108, 92, 231, 0.3);
+            background: transparent;
+            color: #a29bfe;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all var(--transition);
+            font-size: 14px;
+        }
+        .quickgame-box .choices button.selected {
+            background: #6c5ce7;
+            border-color: #6c5ce7;
+            color: #fff;
+        }
+        .quick-bet-row {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-bottom: 12px;
+        }
+        .quick-bet-row input {
+            width: 100px;
+            padding: 10px 12px;
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--input-border);
+            background: var(--input-bg);
+            color: var(--text);
+            font-size: 14px;
+            outline: none;
+            text-align: center;
+        }
+        .quick-bet-row input:focus {
+            border-color: #6c5ce7;
+        }
+        .quick-bet-row button {
+            padding: 10px 28px;
+            border: none;
+            border-radius: 30px;
+            background: linear-gradient(135deg, #6c5ce7, #a29bfe);
+            color: #fff;
+            font-weight: 700;
+            cursor: pointer;
+            transition: transform var(--transition);
+        }
+        .quick-bet-row button:active {
+            transform: scale(0.95);
+        }
+        .quick-bet-row button:disabled {
+            opacity: 0.5;
+            pointer-events: none;
+        }
+        .quick-result {
+            font-size: 16px;
+            font-weight: 600;
+            color: #fd79a8;
+            min-height: 28px;
+            transition: all 0.4s;
+        }
+        .quick-result.win {
+            color: #00b894;
+            animation: resultPop 0.5s ease;
+        }
+        .quick-result.lose {
+            color: #fd79a8;
+            animation: resultShake 0.5s ease;
+        }
+        @keyframes resultPop {
+            0%,
+            100% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.2);
+            }
+        }
+        @keyframes resultShake {
+            0%,
+            100% {
+                transform: translateX(0);
+            }
+            25% {
+                transform: translateX(-6px);
+            }
+            75% {
+                transform: translateX(6px);
+            }
+        }
+        .quickgame-box .odd-info {
+            font-size: 12px;
+            color: #7f8fa6;
+            margin-bottom: 8px;
+        }
+        .quickgame-box .win-pct-info {
+            display: none;
+        }
+
+        .dice-container {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            margin: 16px auto;
+        }
+        .dice {
+            width: 70px;
+            height: 70px;
+            background: linear-gradient(135deg, #fff, #e0e0e0);
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 36px;
+            font-weight: 900;
+            color: #1a1e2e;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+            transition: none;
+        }
+        .dice.rolling {
+            animation: diceRoll 0.8s ease-out;
+        }
+        @keyframes diceRoll {
+            0% {
+                transform: rotateZ(0deg) scale(1);
+            }
+            20% {
+                transform: rotateZ(90deg) scale(1.15);
+            }
+            40% {
+                transform: rotateZ(200deg) scale(0.9);
+            }
+            60% {
+                transform: rotateZ(320deg) scale(1.1);
+            }
+            80% {
+                transform: rotateZ(400deg) scale(0.95);
+            }
+            100% {
+                transform: rotateZ(360deg) scale(1);
+            }
+        }
+        .dice-sum-display {
+            font-size: 22px;
+            font-weight: 800;
+            color: #a29bfe;
+            margin-top: 4px;
+            min-height: 32px;
+        }
+
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 500;
+            display: none;
+            justify-content: center;
+            align-items: center;
+            padding: 24px;
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+        }
+        .modal-overlay.show {
+            display: flex;
+        }
+        .modal-box {
+            background: #141b2b;
+            border: 1px solid var(--border);
+            border-radius: 24px;
+            padding: 32px 28px;
+            max-width: 400px;
+            width: 100%;
+            text-align: center;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        body.light .modal-box {
+            background: #ffffff;
+            color: #1a1e2e;
+        }
+        .modal-box h3 {
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+        .modal-box .balance-big {
+            font-size: 42px;
+            font-weight: 900;
+            background: linear-gradient(135deg, #6c5ce7, #fd79a8);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin: 8px 0;
+        }
+        .modal-box .balance-label {
+            color: #7f8fa6;
+            font-size: 14px;
+        }
+        .modal-box .action-row {
+            display: flex;
+            gap: 12px;
+            margin-top: 20px;
+        }
+        .modal-box .action-row button {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: var(--radius-sm);
+            font-weight: 700;
+            cursor: pointer;
+            transition: transform var(--transition);
+            font-size: 14px;
+        }
+        .modal-box .action-row button:active {
+            transform: scale(0.95);
+        }
+        .modal-box .btn-deposit {
+            background: linear-gradient(135deg, #00b894, #00cec9);
+            color: #fff;
+        }
+        .modal-box .btn-withdraw {
+            background: linear-gradient(135deg, #fd79a8, #e84393);
+            color: #fff;
+        }
+        .modal-box .btn-close-modal {
+            background: #1e2538;
+            color: #7f8fa6;
+            padding: 10px 24px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+        }
+        .modal-box input[type="number"],
+        .modal-box input[type="text"],
+        .modal-box select {
+            width: 100%;
+            padding: 12px;
+            border-radius: var(--radius-sm);
+            border: 1px solid #1e2538;
+            background: #121828;
+            color: #e0e6f0;
+            font-size: 14px;
+            outline: none;
+            margin-top: 8px;
+        }
+        .modal-box input:focus {
+            border-color: #6c5ce7;
+        }
+        .modal-box .method-info {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: #1e2538;
+            padding: 8px 12px;
+            border-radius: 8px;
+            margin-top: 8px;
+            flex-wrap: wrap;
+        }
+        .modal-box .method-info img {
+            width: 30px;
+            height: 30px;
+            border-radius: 4px;
+            object-fit: cover;
+        }
+        .modal-box .method-info .address {
+            flex: 1;
+            font-size: 13px;
+            color: #a29bfe;
+            word-break: break-all;
+            min-width: 120px;
+        }
+        .modal-box .method-info .description {
+            width: 100%;
+            font-size: 11px;
+            color: #7f8fa6;
+            margin-top: 2px;
+        }
+        .modal-box .copy-btn {
+            background: rgba(108, 92, 231, 0.2);
+            border: none;
+            color: #a29bfe;
+            padding: 4px 10px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+            white-space: nowrap;
+        }
+        .modal-box .min-max-info {
+            font-size: 11px;
+            color: #fdcb6e;
+            margin-top: 4px;
+            text-align: left;
+        }
+        .modal-tabs {
+            display: flex;
+            gap: 0;
+            margin-bottom: 16px;
+            border-radius: 12px;
+            overflow: hidden;
+            background: #121828;
+        }
+        .modal-tab {
+            flex: 1;
+            padding: 10px;
+            text-align: center;
+            font-weight: 600;
+            font-size: 13px;
+            color: #7f8fa6;
+            cursor: pointer;
+            transition: all var(--transition);
+            border: none;
+            background: transparent;
+        }
+        .modal-tab.active {
+            background: #6c5ce7;
+            color: #fff;
+        }
+        .modal-deposit-form,
+        .modal-withdraw-form {
+            display: none;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .modal-deposit-form.show,
+        .modal-withdraw-form.show {
+            display: flex;
+        }
+        .maintenance-notice {
+            background: rgba(253, 203, 110, 0.15);
+            border: 1px solid rgba(253, 203, 110, 0.3);
+            border-radius: var(--radius-sm);
+            padding: 20px;
+            text-align: center;
+            color: #fdcb6e;
+            font-weight: 600;
+            font-size: 15px;
+            margin: 16px 0;
+        }
+        .maintenance-notice .m-icon {
+            font-size: 40px;
+            display: block;
+            margin-bottom: 8px;
+        }
+
+        .payment-item {
+            background: rgba(20, 27, 43, 0.6);
+            border-radius: var(--radius-sm);
+            padding: 12px 16px;
+            margin-bottom: 8px;
+            border: 1px solid rgba(108, 92, 231, 0.1);
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 6px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: background var(--transition);
+        }
+        .payment-item:hover {
+            background: rgba(108, 92, 231, 0.1);
+        }
+        .payment-item .left {
+            color: #c8d0e0;
+            flex: 1;
+            min-width: 140px;
+        }
+        .payment-item .status {
+            font-weight: 700;
+        }
+        .payment-item .status.approved,
+        .payment-item .status.won {
+            color: #00b894;
+        }
+        .payment-item .status.pending {
+            color: #fdcb6e;
+        }
+        .payment-item .status.rejected,
+        .payment-item .status.lost {
+            color: #fd79a8;
+        }
+
+        .toast-container {
+            position: fixed;
+            bottom: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 9999;
+            pointer-events: none;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            align-items: center;
+        }
+        .toast {
+            padding: 14px 24px;
+            border-radius: var(--radius);
+            background: rgba(20, 27, 43, 0.95);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(108, 92, 231, 0.2);
+            color: #e0e6f0;
+            font-weight: 500;
+            font-size: 14px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+            animation: toastIn 0.4s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+            pointer-events: auto;
+            max-width: 90vw;
+            text-align: center;
+        }
+        .toast.success {
+            border-color: #00b894;
+        }
+        .toast.error {
+            border-color: #fd79a8;
+        }
+        .toast.info {
+            border-color: #6c5ce7;
+        }
+        .toast.out {
+            animation: toastOut 0.3s ease forwards;
+        }
+        @keyframes toastIn {
+            0% {
+                opacity: 0;
+                transform: translateY(30px) scale(0.9);
+            }
+            100% {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+        @keyframes toastOut {
+            0% {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+            100% {
+                opacity: 0;
+                transform: translateY(-20px) scale(0.9);
+            }
+        }
+
+        .drawer-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.6);
+            z-index: 999;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity var(--transition);
+        }
+        .drawer-overlay.show {
+            opacity: 1;
+            pointer-events: all;
+        }
+        .side-drawer {
+            position: fixed;
+            top: 0;
+            left: -300px;
+            width: 280px;
+            max-width: 80vw;
+            height: 100%;
+            background: #101624;
+            border-right: 1px solid rgba(108, 92, 231, 0.15);
+            z-index: 1000;
+            transition: left 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+            display: flex;
+            flex-direction: column;
+            box-shadow: 5px 0 30px rgba(0, 0, 0, 0.5);
+        }
+        body.light .side-drawer {
+            background: #ffffff;
+        }
+        .side-drawer.open {
+            left: 0;
+        }
+        .drawer-profile {
+            padding: 24px 20px 20px;
+            background: linear-gradient(135deg, #141b2b, #1e2538);
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            border-bottom: 1px solid rgba(108, 92, 231, 0.1);
+        }
+        body.light .drawer-profile {
+            background: #f0f2f8;
+        }
+        .drawer-avatar {
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #6c5ce7, #fd79a8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+            font-weight: 800;
+            color: #fff;
+            flex-shrink: 0;
+        }
+        .drawer-name {
+            font-weight: 700;
+            font-size: 16px;
+        }
+        .drawer-email {
+            font-size: 12px;
+            color: #7f8fa6;
+            word-break: break-all;
+        }
+        .drawer-id {
+            font-size: 10px;
+            color: #6c5ce7;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
+        .drawer-menu {
+            flex: 1;
+            overflow-y: auto;
+            padding: 12px 0;
+        }
+        .drawer-item {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 16px 20px;
+            color: #c8d0e0;
+            cursor: pointer;
+            transition: all var(--transition);
+            border: none;
+            background: none;
+            width: 100%;
+            text-align: left;
+            font-size: 15px;
+        }
+        .drawer-item:hover {
+            background: rgba(108, 92, 231, 0.1);
+            color: #a29bfe;
+        }
+        .drawer-item .icon {
+            font-size: 20px;
+            width: 28px;
+            text-align: center;
+        }
+        .drawer-footer {
+            padding: 16px 20px;
+            border-top: 1px solid rgba(108, 92, 231, 0.1);
+            text-align: center;
+            color: #4a5680;
+            font-size: 11px;
+        }
+
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(11, 14, 23, 0.9);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border-top: 1px solid rgba(108, 92, 231, 0.1);
+            display: flex;
+            justify-content: space-around;
+            padding: 8px 0 12px;
+            z-index: 100;
+        }
+        body.light .bottom-nav {
+            background: rgba(255, 255, 255, 0.9);
+        }
+        .bottom-nav button {
+            background: none;
+            border: none;
+            color: #7f8fa6;
+            font-size: 12px;
+            font-weight: 600;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 2px;
+            cursor: pointer;
+            transition: color var(--transition);
+            padding: 4px 12px;
+            border-radius: 12px;
+        }
+        .bottom-nav button .nav-icon {
+            font-size: 22px;
+        }
+        .bottom-nav button.active {
+            color: #a29bfe;
+            background: rgba(108, 92, 231, 0.1);
+        }
+
+        .firebase-badge {
+            position: fixed;
+            bottom: 70px;
+            right: 12px;
+            background: rgba(11, 14, 23, 0.8);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 200, 0, 0.15);
+            border-radius: 30px;
+            padding: 6px 16px 6px 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 11px;
+            color: #e0e6f0;
+            z-index: 9998;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+            cursor: pointer;
+            transition: transform var(--transition);
+            pointer-events: auto;
+            user-select: none;
+        }
+        body.light .firebase-badge {
+            background: rgba(255, 255, 255, 0.85);
+            color: #1a1e2e;
+        }
+        .firebase-badge:active {
+            transform: scale(0.95);
+        }
+        .firebase-badge .fb-icon {
+            width: 20px;
+            height: 20px;
+            background: #ffca28;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 900;
+            font-size: 11px;
+            color: #0b0e17;
+            flex-shrink: 0;
+        }
+        .firebase-badge span {
+            color: var(--text);
+            font-weight: 700;
+            font-size: 12px;
+        }
+        .firebase-badge .fb-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: #00b894;
+            display: inline-block;
+            animation: pulseDot 1.8s ease-in-out infinite;
+            margin-left: 2px;
+        }
+        @keyframes pulseDot {
+            0%,
+            100% {
+                opacity: 1;
+                transform: scale(1);
+            }
+            50% {
+                opacity: 0.4;
+                transform: scale(0.7);
+            }
+        }
+
+        #support-screen {
+            background: var(--bg);
+            padding: 20px;
+            overflow-y: auto;
+        }
+        .support-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 24px;
+            margin-bottom: 16px;
+            text-align: center;
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+        }
+        .support-card .support-icon {
+            font-size: 48px;
+            margin-bottom: 12px;
+        }
+        .support-card h3 {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+        .support-card .support-detail {
+            color: var(--accent-light);
+            font-size: 15px;
+            font-weight: 600;
+            word-break: break-all;
+        }
+        .support-card .support-detail a {
+            color: var(--accent-light);
+            text-decoration: underline;
+            cursor: pointer;
+        }
+        .support-card .support-detail a:hover {
+            color: #fd79a8;
+        }
+        .support-card .support-label {
+            color: var(--muted);
+            font-size: 12px;
+            margin-bottom: 2px;
+        }
+        .support-card .copy-support-btn {
+            margin-top: 12px;
+            padding: 8px 18px;
+            border-radius: 20px;
+            border: 1px solid #6c5ce7;
+            background: rgba(108, 92, 231, 0.15);
+            color: #a29bfe;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 13px;
+            transition: all var(--transition);
+        }
+        .support-card .copy-support-btn:active {
+            background: #6c5ce7;
+            color: #fff;
+        }
+        .support-card .open-link-btn {
+            margin-top: 8px;
+            padding: 8px 18px;
+            border-radius: 20px;
+            border: 1px solid #00b894;
+            background: rgba(0, 184, 148, 0.15);
+            color: #00b894;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 13px;
+            transition: all var(--transition);
+            display: inline-block;
+        }
+        .support-card .open-link-btn:active {
+            background: #00b894;
+            color: #fff;
+        }
+
+        @media (min-width: 600px) {
+            .sports-feed {
+                max-width: 520px;
+                margin: 0 auto;
+            }
+        }
+        @media (max-width: 380px) {
+            .wallet-pill {
+                font-size: 12px;
+                padding: 6px 10px;
+                min-width: 80px;
+            }
+            .dash-title {
+                font-size: 17px;
+            }
+            .game-card .odds-row {
+                flex-wrap: wrap;
+            }
+            .modal-box {
+                padding: 20px;
+            }
+            .game-card .team-img {
+                width: 24px;
+                height: 24px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="toast-container" id="toastContainer"></div>
+
+    <div class="firebase-badge" id="firebaseBadge" title="Account Active">
+        <div class="fb-icon">N</div>
+        <span>Account Active</span>
+        <span class="fb-dot"></span>
+    </div>
+
+    <div class="modal-overlay" id="walletModal">
+        <div class="modal-box">
+            <h3>Wallet</h3>
+            <div class="balance-label">Your Balance</div>
+            <div class="balance-big" id="modalBalance">0</div>
+            <div class="balance-label">BDT</div>
+            <div id="maintenanceNotice" class="maintenance-notice" style="display:none;">
+                <span class="m-icon">🔧</span>
+                <span id="maintenanceMsg">Under Maintenance</span>
+                <p style="font-size:12px;color:#7f8fa6;margin-top:6px;">Deposit & Withdraw are temporarily unavailable. Please try again later.</p>
+            </div>
+            <div id="walletFormsContainer">
+                <div class="modal-tabs">
+                    <button class="modal-tab active" data-tab="deposit">Deposit</button>
+                    <button class="modal-tab" data-tab="withdraw">Withdraw</button>
+                </div>
+                <div class="modal-deposit-form show" id="depositForm">
+                    <select id="depositMethodSelect"><option value="">Select method</option></select>
+                    <div id="depositMethodInfo" class="method-info" style="display:none;">
+                        <img id="depositMethodImg" src="" alt="method" />
+                        <span class="address" id="depositAddress"></span>
+                        <button class="copy-btn" id="copyDepositAddress">Copy</button>
+                        <span class="description" id="depositDescription"></span>
+                    </div>
+                    <div class="min-max-info" id="depositMinMax"></div>
+                    <input type="number" id="depositAmount" placeholder="Amount (BDT)" min="1" />
+                    <input type="text" id="depositTxnId" placeholder="Transaction ID" />
+                    <input type="text" id="depositPhone" placeholder="Sender Phone Number" />
+                    <button class="btn-deposit" id="submitDepositBtn">Submit Deposit Request</button>
+                    <div id="depositError" style="color:#fd79a8;font-size:13px;min-height:20px;"></div>
+                </div>
+                <div class="modal-withdraw-form" id="withdrawForm">
+                    <select id="withdrawMethodSelect"><option value="">Select method</option></select>
+                    <div class="min-max-info" id="withdrawMinMax"></div>
+                    <input type="text" id="withdrawNumber" placeholder="Your Phone/Account Number" />
+                    <input type="number" id="withdrawAmount" placeholder="Amount (BDT)" min="1" />
+                    <button class="btn-withdraw" id="submitWithdrawBtn">Submit Withdraw Request</button>
+                    <div id="withdrawError" style="color:#fd79a8;font-size:13px;min-height:20px;"></div>
+                </div>
+            </div>
+            <div style="margin-top:12px;"><button class="btn-close-modal" id="closeModalBtn">Close</button></div>
+        </div>
+    </div>
+
+    <div id="app">
+
+        <div class="screen active" id="loading-screen">
+            <div class="loader-logo">
+                <div class="nexus-icon">N</div>
+                <div class="loader-title">NexusPlay</div>
+                <div class="loader-sub">FUTURE OF BETTING</div>
+                <div class="loader-bar-wrap"><div class="loader-bar" id="loadBar"></div></div>
+                <div class="loader-percent" id="loadPercent">0%</div>
+            </div>
+        </div>
+
+        <div class="screen" id="auth-screen">
+            <div class="auth-box">
+                <div class="mini-logo">NexusPlay</div>
+                <div class="auth-tabs">
+                    <button class="auth-tab active" data-tab="login">Sign In</button>
+                    <button class="auth-tab" data-tab="signup">Sign Up</button>
+                </div>
+                <form class="auth-form show" id="loginForm" autocomplete="off">
+                    <input type="email" id="loginEmail" placeholder="Email" required />
+                    <input type="password" id="loginPass" placeholder="Password" required />
+                    <button class="auth-btn" type="submit" id="loginBtn">Enter Nexus</button>
+                    <div class="auth-error" id="loginError"></div>
+                    <div class="auth-loading" id="loginLoading"></div>
+                </form>
+                <form class="auth-form" id="signupForm" autocomplete="off">
+                    <input type="text" id="signupName" placeholder="Display Name (optional)" />
+                    <input type="email" id="signupEmail" placeholder="Email" required />
+                    <input type="password" id="signupPass" placeholder="Password (min 6)" required minlength="6" />
+                    <button class="auth-btn" type="submit" id="signupBtn">Create Account</button>
+                    <div class="auth-error" id="signupError"></div>
+                    <div class="auth-loading" id="signupLoading"></div>
+                </form>
+            </div>
+        </div>
+
+        <div class="screen" id="maintenance-screen">
+            <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; height:100%; padding:40px; text-align:center;">
+                <div style="font-size:80px; margin-bottom:20px;">🔧</div>
+                <h2 style="color:#fdcb6e; margin-bottom:12px;">Under Maintenance</h2>
+                <p id="maintenanceScreenMsg" style="color:#e0e6f0; font-size:16px; max-width:320px;">We’re currently performing scheduled maintenance. Please check back later.</p>
+                <button id="maintenanceLogoutBtn" class="auth-btn" style="margin-top:30px; padding:12px 30px;">Sign Out</button>
+            </div>
+        </div>
+
+        <div class="screen" id="dash-screen">
+            <div class="dash-header">
+                <button class="menu-btn" id="menuBtn">☰</button>
+                <div class="dash-title">NexusPlay</div>
+                <div class="wallet-pill" id="walletPill">
+                    <span class="coin">BDT</span>
+                    <span id="walletDisplay">0</span>
+                </div>
+            </div>
+            <div class="filter-bar" id="filterBar">
+                <button class="filter-btn active" data-category="all">All Live</button>
+                <button class="filter-btn" data-category="football">Football</button>
+                <button class="filter-btn" data-category="cricket">Cricket</button>
+                <button class="filter-btn" data-category="basketball">Basketball</button>
+                <button class="filter-btn" data-category="tennis">Tennis</button>
+                <button class="filter-btn" data-category="mma">MMA</button>
+            </div>
+            <div class="sports-feed" id="sportsFeed">
+                <div class="feed-header">
+                    <h2 id="feedTitle">Live Games</h2>
+                    <div class="streak-badge">Streak <span id="streakCount">0</span></div>
+                </div>
+                <div id="gameCardsContainer"></div>
+                <div style="text-align:center;padding:24px 0;color:#4a5680;font-size:13px;">NexusPlay · Firebase Edition</div>
+            </div>
+        </div>
+
+        <div class="screen" id="quickgame-screen">
+            <div style="text-align:right; padding:8px 16px; color:var(--accent); font-weight:600;">
+                Balance: BDT <span id="uoBalance">0</span>
+            </div>
+            <div class="quickgame-box" id="uoGame">
+                <h2>Under/Over 7</h2>
+                <div class="sub">Predict the dice sum (2 dice)</div>
+                <div class="odd-info">Only 7: 5.70 | Under 7: 2.30 | Over 7: 2.30</div>
+                <div id="uoDisabledMsg" style="color:#fd79a8; font-weight:600; display:none; margin:12px 0;">Quick game is temporarily disabled.</div>
+                <div class="dice-container">
+                    <div class="dice" id="dice1">🎲</div>
+                    <div class="dice" id="dice2">🎲</div>
+                </div>
+                <div class="dice-sum-display" id="diceSumDisplay"></div>
+                <div class="choices" id="uoChoices">
+                    <button data-choice="under" class="selected">Under 7</button>
+                    <button data-choice="seven">Only 7</button>
+                    <button data-choice="over">Over 7</button>
+                </div>
+                <div class="quick-bet-row">
+                    <input type="number" id="uoAmount" value="50" min="15" placeholder="Amount" />
+                    <button id="uoBetBtn">Bet</button>
+                </div>
+                <div class="quick-result" id="uoResult"></div>
+            </div>
+        </div>
+
+        <div class="screen" id="history-screen">
+            <div class="dash-header">
+                <button class="menu-btn" id="historyBackBtn">←</button>
+                <div class="dash-title">Payment History</div>
+                <div style="width:40px;"></div>
+            </div>
+            <div style="padding:16px; flex:1; overflow-y:auto;">
+                <div id="paymentHistoryList"></div>
+            </div>
+        </div>
+
+        <div class="screen" id="profile-screen">
+            <div class="dash-header">
+                <button class="menu-btn" id="profileBackBtn">←</button>
+                <div class="dash-title">Profile</div>
+                <div style="width:40px;"></div>
+            </div>
+            <div style="padding:20px; max-width:500px; margin:0 auto; width:100%; overflow-y:auto; flex:1;">
+                <div style="text-align:center;margin-bottom:20px;">
+                    <div class="drawer-avatar" id="profileAvatar" style="width:70px;height:70px;font-size:28px;margin:0 auto;">N</div>
+                    <div style="font-weight:700;font-size:18px;margin-top:8px;" id="profileDisplayName">Player</div>
+                    <div style="color:#6c5ce7;font-size:12px;font-weight:600;letter-spacing:0.5px;" id="profileUserId">NXP-XXXXX</div>
+                </div>
+                <label style="color:var(--muted);font-size:14px;">Display Name</label>
+                <input type="text" id="profileName" style="width:100%;padding:12px;border-radius:12px;border:1px solid #1e2538;background:#121828;color:#e0e6f0;font-size:15px;outline:none;margin-bottom:16px;" />
+                <label style="color:var(--muted);font-size:14px;">Email</label>
+                <input type="email" id="profileEmail" style="width:100%;padding:12px;border-radius:12px;border:1px solid #1e2538;background:#121828;color:#e0e6f0;font-size:15px;outline:none;margin-bottom:16px;" />
+                <button id="profileSaveBtn" class="auth-btn" style="width:100%;">Save</button>
+                <div class="streak-badge" style="margin-top:16px;text-align:center;display:block;">
+                    Total Bets: <span id="profileTotalBets">0</span> | Wins: <span id="profileWins">0</span> | Streak: <span id="profileStreak">0</span>
+                </div>
+                <h4 style="margin-top:24px;color:var(--text);">Bet History</h4>
+                <div id="profileBetHistory" style="max-height:300px;overflow-y:auto;"></div>
+                <h4 style="margin-top:20px;color:var(--text);">Payment History</h4>
+                <div id="profilePaymentHistory" style="max-height:300px;overflow-y:auto;"></div>
+            </div>
+        </div>
+
+        <div class="screen" id="support-screen">
+            <div class="dash-header">
+                <button class="menu-btn" id="supportBackBtn">←</button>
+                <div class="dash-title">Support</div>
+                <div style="width:40px;"></div>
+            </div>
+            <div style="padding:20px;max-width:450px;margin:0 auto;width:100%;overflow-y:auto;flex:1;">
+                <div id="supportContent">
+                    <div class="support-card">
+                        <div class="support-icon">📞</div>
+                        <h3>Contact Support</h3>
+                        <div class="support-label">Phone</div>
+                        <div class="support-detail" id="supportPhone">Loading...</div>
+                        <button class="copy-support-btn" data-copy="supportPhone">Copy Phone</button>
+                    </div>
+                    <div class="support-card">
+                        <div class="support-icon">✉️</div>
+                        <h3>Email</h3>
+                        <div class="support-label">Email Address</div>
+                        <div class="support-detail" id="supportEmail">Loading...</div>
+                        <button class="copy-support-btn" data-copy="supportEmail">Copy Email</button>
+                    </div>
+                    <div class="support-card">
+                        <div class="support-icon">💬</div>
+                        <h3>Telegram / WhatsApp</h3>
+                        <div class="support-label">Messenger</div>
+                        <div class="support-detail" id="supportMessenger">Loading...</div>
+                        <button class="copy-support-btn" data-copy="supportMessenger">Copy</button>
+                        <button class="open-link-btn" id="openTelegramBtn" style="display:none;">Open Telegram</button>
+                        <button class="open-link-btn" id="openWhatsappBtn" style="display:none;">Open WhatsApp</button>
+                    </div>
+                    <div class="support-card">
+                        <div class="support-icon">ℹ️</div>
+                        <h3>Additional Info</h3>
+                        <div class="support-detail" id="supportInfoEl" style="font-size:13px;color:#c8d0e0;">Loading...</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="screen" id="sport-bet-history-screen">
+            <div class="dash-header">
+                <button class="menu-btn" id="sportBetHistoryBackBtn">←</button>
+                <div class="dash-title">Sport Bet History</div>
+                <div style="width:40px;"></div>
+            </div>
+            <div style="padding:16px; flex:1; overflow-y:auto;">
+                <div id="sportBetList"></div>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="modal-overlay" id="betDetailModal">
+        <div class="modal-box" style="text-align:left;">
+            <h3>Bet Details</h3>
+            <div id="betDetailContent" style="margin:16px 0;"></div>
+            <button class="btn-close-modal" id="closeBetDetailBtn">Close</button>
+        </div>
+    </div>
+
+    <div class="drawer-overlay" id="drawerOverlay"></div>
+    <div class="side-drawer" id="sideDrawer">
+        <div class="drawer-profile">
+            <div class="drawer-avatar" id="drawerAvatar">N</div>
+            <div>
+                <div class="drawer-name" id="drawerName">Player</div>
+                <div class="drawer-email" id="drawerEmail">player@nexus.com</div>
+                <div class="drawer-id" id="drawerUserId">NXP-XXXXX</div>
+            </div>
+        </div>
+        <div class="drawer-menu">
+            <button class="drawer-item" data-action="wallet"><span class="icon">💰</span> Wallet</button>
+            <button class="drawer-item" data-action="home"><span class="icon">🏠</span> Home</button>
+            <button class="drawer-item" data-action="quickgame"><span class="icon">🎲</span> Quick Bet</button>
+            <button class="drawer-item" data-action="history"><span class="icon">📜</span> Payment History</button>
+            <button class="drawer-item" data-action="sport-bet-history"><span class="icon">⚽</span> Sport Bet History</button>
+            <button class="drawer-item" data-action="profile"><span class="icon">👤</span> Profile</button>
+            <button class="drawer-item" data-action="support"><span class="icon">🆘</span> Support</button>
+            <button class="drawer-item" data-action="theme"><span class="icon">🌓</span> Toggle Theme</button>
+            <button class="drawer-item" data-action="logout"><span class="icon">🚪</span> Sign Out</button>
+        </div>
+        <div class="drawer-footer">
+            <div>NexusPlay · Firebase v4.0</div>
+            <div style="margin-top:4px;">Bet with Confidence</div>
+        </div>
+    </div>
+
+    <div class="slip-overlay" id="slipOverlay"></div>
+    <div class="betting-slip" id="bettingSlip">
+        <div class="slip-header">
+            <span>Bet Slip</span>
+            <button id="closeSlipBtn">✕</button>
+        </div>
+        <div class="slip-body">
+            <p id="slipSelection" style="color:var(--text);font-size:15px;">Select a team</p>
+            <p style="color:var(--muted);">Odds: <span id="slipOdds" style="color:#a29bfe;font-weight:700;">0.00</span></p>
+            <label style="color:var(--muted);">Amount (Min BDT15)</label>
+            <input type="number" id="slipAmount" value="15" min="15" />
+            <p style="color:var(--muted);">Potential Win: <span class="potential" id="slipPotential">BDT0.00</span></p>
+            <button class="place-btn" id="placeSlipBet">Place Bet</button>
+            <p id="slipError" style="color:#fd79a8;font-size:13px;min-height:20px;"></p>
+        </div>
+    </div>
+
+    <div class="bottom-nav" id="bottomNav">
+        <button class="active" data-screen="dash-screen"><span class="nav-icon">🏠</span> Home</button>
+        <button data-screen="quickgame-screen"><span class="nav-icon">🎲</span> Quick Bet</button>
+        <button data-screen="history-screen"><span class="nav-icon">📜</span> Payments</button>
+        <button data-screen="sport-bet-history-screen"><span class="nav-icon">⚽</span> Sports Bet</button>
+    </div>
+
+    <script>
+        (function() {
+            'use strict';
+
+            const firebaseConfig = {
+                apiKey: "AIzaSyAMNq2EfxTEkQ-3LUn2g2gOut8iEwBT9XQ",
+                authDomain: "nexus-bet-e7c85.firebaseapp.com",
+                databaseURL: "https://nexus-bet-e7c85-default-rtdb.firebaseio.com",
+                projectId: "nexus-bet-e7c85",
+                storageBucket: "nexus-bet-e7c85.firebasestorage.app",
+                messagingSenderId: "213247915114",
+                appId: "1:213247915114:web:9f2647b6902dce7bf64613",
+                measurementId: "G-XPGV95BFJJ"
+            };
+
+            firebase.initializeApp(firebaseConfig);
+            const auth = firebase.auth();
+            const db = firebase.database();
+
+            const state = {
+                currentUser: null,
+                currentUid: null,
+                userId: '',
+                balance: 0,
+                streak: 0,
+                totalBets: 0,
+                wins: 0,
+                betHistory: [],         // used to display bets; now an array of objects with unique IDs
+                paymentHistory: [],     // fetched from separate node
+                games: [],
+                paymentMethods: { deposit: [], withdraw: [] },
+                quickGameSettings: { underOver7: { enabled: true, winPercentage: 50, forceWin: false } },
+                supportInfo: { phone: '', email: '', messenger: '', info: '', telegramLink: '', whatsappLink: '' },
+                appSettings: { minDeposit: 100, minWithdraw: 100, maxWithdraw: 50000, minBet: 15 },
+                maintenanceMode: false,
+                maintenanceMessage: 'Under Maintenance',
+                selectedCategory: 'all',
+                isAnimating: false,
+            };
+
+            let selectedBet = null;
+            let selectedOdds = {};
+            let countdownIntervals = {};
+            let gamesListener = null;
+            let paymentMethodsListener = null;
+            let userDataListener = null;
+            let quickGameSettingsListener = null;
+            let supportInfoListener = null;
+            let appSettingsListener = null;
+            let maintenanceListener = null;
+            let betsListener = null;
+            let paymentRequestsListener = null;
+            let screenHistory = [];
+
+            const $ = (s) => document.querySelector(s);
+            const $$ = (s) => document.querySelectorAll(s);
+
+            const loadingScreen = $('#loading-screen');
+            const authScreen = $('#auth-screen');
+            const maintenanceScreen = $('#maintenance-screen');
+            const dashScreen = $('#dash-screen');
+            const quickgameScreen = $('#quickgame-screen');
+            const historyScreen = $('#history-screen');
+            const profileScreen = $('#profile-screen');
+            const supportScreen = $('#support-screen');
+            const sportBetHistoryScreen = $('#sport-bet-history-screen');
+
+            const drawer = $('#sideDrawer');
+            const drawerOverlay = $('#drawerOverlay');
+            const walletPill = $('#walletPill');
+            const walletDisplay = $('#walletDisplay');
+            const modalOverlay = $('#walletModal');
+            const modalBalance = $('#modalBalance');
+            const closeModalBtn = $('#closeModalBtn');
+            const toastContainer = $('#toastContainer');
+            const streakCount = $('#streakCount');
+            const drawerName = $('#drawerName');
+            const drawerEmail = $('#drawerEmail');
+            const drawerAvatar = $('#drawerAvatar');
+            const drawerUserId = $('#drawerUserId');
+            const menuBtn = $('#menuBtn');
+            const bottomNav = $('#bottomNav');
+            const filterBar = $('#filterBar');
+            const gameContainer = $('#gameCardsContainer');
+            const feedTitle = $('#feedTitle');
+
+            const slipOverlay = $('#slipOverlay');
+            const bettingSlip = $('#bettingSlip');
+            const slipSelection = $('#slipSelection');
+            const slipOdds = $('#slipOdds');
+            const slipAmount = $('#slipAmount');
+            const slipPotential = $('#slipPotential');
+            const placeSlipBet = $('#placeSlipBet');
+            const slipError = $('#slipError');
+            const closeSlipBtn = $('#closeSlipBtn');
+
+            const uoChoices = $$('#uoChoices button');
+            const uoAmount = $('#uoAmount');
+            const uoBetBtn = $('#uoBetBtn');
+            const uoResult = $('#uoResult');
+            const dice1 = $('#dice1');
+            const dice2 = $('#dice2');
+            const diceSumDisplay = $('#diceSumDisplay');
+            const uoDisabledMsg = $('#uoDisabledMsg');
+            const uoBalance = $('#uoBalance');
+
+            const loginForm = $('#loginForm');
+            const signupForm = $('#signupForm');
+            const loginError = $('#loginError');
+            const signupError = $('#signupError');
+            const loginLoading = $('#loginLoading');
+            const signupLoading = $('#signupLoading');
+            const loginBtn = $('#loginBtn');
+            const signupBtn = $('#signupBtn');
+            const authTabs = $$('.auth-tab');
+
+            const paymentHistoryList = $('#paymentHistoryList');
+            const historyBackBtn = $('#historyBackBtn');
+            const profileName = $('#profileName');
+            const profileEmail = $('#profileEmail');
+            const profileSaveBtn = $('#profileSaveBtn');
+            const profileTotalBets = $('#profileTotalBets');
+            const profileWins = $('#profileWins');
+            const profileStreak = $('#profileStreak');
+            const profileBackBtn = $('#profileBackBtn');
+            const profileAvatar = $('#profileAvatar');
+            const profileDisplayName = $('#profileDisplayName');
+            const profileUserId = $('#profileUserId');
+            const profileBetHistory = $('#profileBetHistory');
+            const profilePaymentHistory = $('#profilePaymentHistory');
+
+            const supportBackBtn = $('#supportBackBtn');
+            const supportPhone = $('#supportPhone');
+            const supportEmail = $('#supportEmail');
+            const supportMessenger = $('#supportMessenger');
+            const supportInfoEl = $('#supportInfoEl');
+            const openTelegramBtn = $('#openTelegramBtn');
+            const openWhatsappBtn = $('#openWhatsappBtn');
+
+            const modalTabs = $$('.modal-tab');
+            const depositForm = $('#depositForm');
+            const withdrawForm = $('#withdrawForm');
+            const depositMethodSelect = $('#depositMethodSelect');
+            const depositMethodInfo = $('#depositMethodInfo');
+            const depositMethodImg = $('#depositMethodImg');
+            const depositAddress = $('#depositAddress');
+            const depositDescription = $('#depositDescription');
+            const copyDepositAddress = $('#copyDepositAddress');
+            const depositMinMax = $('#depositMinMax');
+            const withdrawMinMax = $('#withdrawMinMax');
+            const depositAmount = $('#depositAmount');
+            const depositTxnId = $('#depositTxnId');
+            const depositPhone = $('#depositPhone');
+            const submitDepositBtn = $('#submitDepositBtn');
+            const depositError = $('#depositError');
+            const withdrawMethodSelect = $('#withdrawMethodSelect');
+            const withdrawNumber = $('#withdrawNumber');
+            const withdrawAmount = $('#withdrawAmount');
+            const submitWithdrawBtn = $('#submitWithdrawBtn');
+            const withdrawError = $('#withdrawError');
+            const maintenanceNotice = $('#maintenanceNotice');
+            const maintenanceMsg = $('#maintenanceMsg');
+            const walletFormsContainer = $('#walletFormsContainer');
+            const maintenanceScreenMsg = $('#maintenanceScreenMsg');
+
+            const sportBetList = $('#sportBetList');
+            const sportBetHistoryBackBtn = $('#sportBetHistoryBackBtn');
+            const betDetailModal = $('#betDetailModal');
+            const betDetailContent = $('#betDetailContent');
+            const closeBetDetailBtn = $('#closeBetDetailBtn');
+
+            function randomId() { return Math.random().toString(36).substring(2, 9); }
+
+            function generateUserId() { return 'NXP-' + Math.random().toString(36).substring(2, 8).toUpperCase(); }
+
+            function generatePlayerName() { return 'Player_' + Math.floor(Math.random() * 9000 + 1000); }
+
+            function toast(msg, type = 'info', duration = 3000) {
+                const el = document.createElement('div');
+                el.className = 'toast ' + type;
+                el.textContent = msg;
+                toastContainer.appendChild(el);
+                setTimeout(() => { el.classList.add('out');
+                    setTimeout(() => el.remove(), 400); }, duration);
+            }
+
+            let currentScreen = loadingScreen;
+
+            function switchScreen(newScreen, dir = 'right') {
+                const old = currentScreen;
+                if (old === newScreen) return;
+                old.classList.remove('active');
+                old.classList.add(dir === 'right' ? 'inactive-right' : 'inactive-left');
+                newScreen.classList.remove('inactive-right', 'inactive-left');
+                newScreen.classList.add('active');
+                currentScreen = newScreen;
+                bottomNav.querySelectorAll('button').forEach(b => {
+                    b.classList.toggle('active', b.dataset.screen === newScreen.id);
+                });
+                setTimeout(() => {
+                    old.classList.remove('inactive-right', 'inactive-left');
+                }, 500);
+            }
+
+            function navigateTo(newScreen, dir = 'right') {
+                if (currentScreen === newScreen) return;
+                if (state.maintenanceMode && newScreen !== maintenanceScreen && newScreen !== authScreen && newScreen !== loadingScreen) {
+                    toast('App is under maintenance.', 'info');
+                    return;
+                }
+                if (currentScreen && currentScreen !== loadingScreen) {
+                    screenHistory.push({ screen: currentScreen, dir: dir === 'right' ? 'left' : 'right' });
+                }
+                try { window.history.pushState({ screenId: newScreen.id, timestamp: Date.now() }, '', ''); } catch (e) {}
+                switchScreen(newScreen, dir);
+            }
+
+            function goBack() {
+                if (screenHistory.length === 0) {
+                    if (currentScreen === dashScreen) return;
+                    navigateTo(dashScreen, 'left');
+                    return;
+                }
+                const prev = screenHistory.pop();
+                switchScreen(prev.screen, prev.dir);
+            }
+
+            window.addEventListener('popstate', function(event) {
+                if (screenHistory.length > 0) {
+                    const prev = screenHistory.pop();
+                    switchScreen(prev.screen, prev.dir);
+                } else if (currentScreen !== dashScreen && currentScreen !== authScreen && currentScreen !== loadingScreen && currentScreen !== maintenanceScreen) {
+                    switchScreen(dashScreen, 'left');
+                }
+            });
+
+            function updateWalletUI() {
+                const bal = state.balance || 0;
+                walletDisplay.textContent = Math.floor(bal);
+                modalBalance.textContent = Math.floor(bal);
+                if (uoBalance) uoBalance.textContent = Math.floor(bal);
+            }
+
+            function updateStreakUI() {
+                streakCount.textContent = state.streak || 0;
+            }
+
+            function updateDrawerUI() {
+                const u = state.currentUser;
+                if (u) {
+                    drawerName.textContent = u.name || 'Player';
+                    drawerEmail.textContent = u.email || '';
+                    drawerAvatar.textContent = (u.name || 'N')[0].toUpperCase();
+                    drawerUserId.textContent = state.userId || 'NXP-XXXXX';
+                }
+            }
+
+            function setupGamesListener() {
+                if (gamesListener) db.ref('games').off('value', gamesListener);
+                gamesListener = db.ref('games').on('value', (snap) => {
+                    const data = snap.val();
+                    if (data) {
+                        state.games = Object.keys(data).map(key => ({ id: key, ...data[key] }));
+                    } else {
+                        state.games = [];
+                    }
+                    checkAndUpdateGameStatuses();
+                    renderGames();
+                    processPendingBets();
+                });
+            }
+
+            function checkAndUpdateGameStatuses() {
+                const now = new Date().getTime();
+                let changed = false;
+                for (const g of state.games) {
+                    if (g.matchTime && g.status === 'upcoming') {
+                        const matchTime = new Date(g.matchTime).getTime();
+                        if (!isNaN(matchTime) && now >= matchTime) {
+                            g.status = 'live';
+                            db.ref('games/' + g.id + '/status').set('live');
+                            changed = true;
+                        }
+                    }
+                    if (g.matchTime && g.status === 'live') {
+                        const matchTime = new Date(g.matchTime).getTime();
+                        if (!isNaN(matchTime) && now >= matchTime + (4 * 60 * 60 * 1000)) {
+                            g.status = 'closed';
+                            db.ref('games/' + g.id + '/status').set('closed');
+                            changed = true;
+                        }
+                    }
+                }
+                if (changed) renderGames();
+            }
+
+            function setupPaymentMethodsListener() {
+                if (paymentMethodsListener) db.ref('paymentMethods').off('value', paymentMethodsListener);
+                paymentMethodsListener = db.ref('paymentMethods').on('value', (snap) => {
+                    const data = snap.val();
+                    if (data) {
+                        state.paymentMethods.deposit = data.deposit ? Object.keys(data.deposit).map(k => ({ id: k,
+                            ...data.deposit[k] })) : [];
+                        state.paymentMethods.withdraw = data.withdraw ? Object.keys(data.withdraw).map(k => ({ id: k,
+                            ...data.withdraw[k] })) : [];
+                    } else {
+                        state.paymentMethods = { deposit: [], withdraw: [] };
+                    }
+                });
+            }
+
+            function setupQuickGameSettingsListener() {
+                if (quickGameSettingsListener) db.ref('quickGameSettings').off('value', quickGameSettingsListener);
+                quickGameSettingsListener = db.ref('quickGameSettings').on('value', (snap) => {
+                    const data = snap.val();
+                    if (data) {
+                        if (data.underOver7) {
+                            state.quickGameSettings.underOver7 = { ...state.quickGameSettings.underOver7,
+                                ...data.underOver7 };
+                        }
+                    }
+                    updateQuickGameUI();
+                });
+            }
+
+            function updateQuickGameUI() {
+                const qs = state.quickGameSettings.underOver7;
+                if (qs.enabled === false) {
+                    uoBetBtn.disabled = true;
+                    uoDisabledMsg.style.display = 'block';
+                } else {
+                    uoBetBtn.disabled = false;
+                    uoDisabledMsg.style.display = 'none';
+                }
+            }
+
+            function setupSupportInfoListener() {
+                if (supportInfoListener) db.ref('supportInfo').off('value', supportInfoListener);
+                supportInfoListener = db.ref('supportInfo').on('value', (snap) => {
+                    const data = snap.val();
+                    if (data) {
+                        state.supportInfo = data;
+                    }
+                    updateSupportUI();
+                });
+            }
+
+            function setupAppSettingsListener() {
+                if (appSettingsListener) db.ref('settings').off('value', appSettingsListener);
+                appSettingsListener = db.ref('settings').on('value', (snap) => {
+                    const data = snap.val();
+                    if (data) {
+                        state.appSettings = { ...state.appSettings, ...data };
+                    }
+                    if (!data || data.minBet === undefined) {
+                        state.appSettings.minBet = 15;
+                    }
+                    updateWalletMinMaxUI();
+                });
+            }
+
+            function setupMaintenanceListener() {
+                if (maintenanceListener) db.ref('maintenanceMode').off('value', maintenanceListener);
+                maintenanceListener = db.ref('maintenanceMode').on('value', (snap) => {
+                    const data = snap.val();
+                    if (data && typeof data === 'object') {
+                        state.maintenanceMode = data.active === true;
+                        state.maintenanceMessage = data.message || 'Under Maintenance';
+                    } else if (typeof data === 'boolean') {
+                        state.maintenanceMode = data;
+                        state.maintenanceMessage = 'Under Maintenance';
+                    } else {
+                        state.maintenanceMode = false;
+                    }
+                    updateMaintenanceUI();
+                    if (state.maintenanceMode && state.currentUid && currentScreen !== maintenanceScreen && currentScreen !== authScreen && currentScreen !== loadingScreen) {
+                        switchScreen(maintenanceScreen, 'right');
+                        screenHistory = [];
+                    }
+                    if (!state.maintenanceMode && currentScreen === maintenanceScreen && state.currentUid) {
+                        switchScreen(dashScreen, 'right');
+                        screenHistory = [];
+                    }
+                });
+            }
+
+            function setupUserBetsListener(uid) {
+                if (!uid) return;
+                if (betsListener) db.ref('bets/' + uid).off('value', betsListener);
+                betsListener = db.ref('bets/' + uid).on('value', (snap) => {
+                    const data = snap.val();
+                    const betsFromDB = data ? Object.keys(data).map(k => ({ id: k, ...data[k] })) : [];
+                    // Merge into state.betHistory without duplicates
+                    for (const b of betsFromDB) {
+                        const existingIdx = state.betHistory.findIndex(h => h.id === b.id);
+                        if (existingIdx !== -1) {
+                            state.betHistory[existingIdx] = b;
+                        } else {
+                            state.betHistory.push(b);
+                        }
+                    }
+                    if (currentScreen === profileScreen) loadProfile();
+                    if (currentScreen === sportBetHistoryScreen) renderSportBetHistory();
+                });
+            }
+
+            function setupPaymentRequestsListener(uid) {
+                if (!uid) return;
+                if (paymentRequestsListener) db.ref('paymentRequests/' + uid).off('value', paymentRequestsListener);
+                paymentRequestsListener = db.ref('paymentRequests/' + uid).on('value', (snap) => {
+                    const data = snap.val();
+                    state.paymentHistory = data ? Object.keys(data).map(k => ({ id: k, ...data[k] })) : [];
+                    if (currentScreen === historyScreen) renderPaymentHistory();
+                    if (currentScreen === profileScreen) loadProfile();
+                });
+            }
+
+            function updateMaintenanceUI() {
+                if (state.maintenanceMode) {
+                    if (maintenanceNotice) maintenanceNotice.style.display = 'block';
+                    if (maintenanceMsg) maintenanceMsg.textContent = state.maintenanceMessage;
+                    if (walletFormsContainer) walletFormsContainer.style.display = 'none';
+                    if (maintenanceScreenMsg) maintenanceScreenMsg.textContent = state.maintenanceMessage;
+                } else {
+                    if (maintenanceNotice) maintenanceNotice.style.display = 'none';
+                    if (walletFormsContainer) walletFormsContainer.style.display = 'block';
+                }
+            }
+
+            function updateWalletMinMaxUI() {
+                const s = state.appSettings;
+                if (depositMinMax) depositMinMax.textContent =
+                    `Min Deposit: BDT${s.minDeposit || 100} | Min Withdraw: BDT${s.minWithdraw || 100} | Max Withdraw: BDT${s.maxWithdraw || 50000}`;
+                if (withdrawMinMax) withdrawMinMax.textContent =
+                    `Min Withdraw: BDT${s.minWithdraw || 100} | Max Withdraw: BDT${s.maxWithdraw || 50000}`;
+                if (depositAmount) depositAmount.min = s.minDeposit || 100;
+                if (withdrawAmount) withdrawAmount.min = s.minWithdraw || 100;
+                if (slipAmount) slipAmount.min = state.appSettings.minBet || 15;
+            }
+
+            function updateSupportUI() {
+                const s = state.supportInfo;
+                if (supportPhone) {
+                    const phone = s.phone || 'Not set';
+                    supportPhone.innerHTML = isUrl(phone) ? `<a href="${phone}" target="_blank" rel="noopener">${phone}</a>` :
+                        phone;
+                }
+                if (supportEmail) {
+                    const email = s.email || 'Not set';
+                    supportEmail.innerHTML = isUrl(email) ?
+                        `<a href="${email}" target="_blank" rel="noopener">${email}</a>` : email;
+                }
+                if (supportMessenger) {
+                    const msg = s.messenger || 'Not set';
+                    supportMessenger.innerHTML = isUrl(msg) ? `<a href="${msg}" target="_blank" rel="noopener">${msg}</a>` :
+                        msg;
+                }
+                if (supportInfoEl) supportInfoEl.textContent = s.info || 'No additional info.';
+
+                if (openTelegramBtn) {
+                    if (s.telegramLink && s.telegramLink.trim()) {
+                        openTelegramBtn.style.display = 'inline-block';
+                        openTelegramBtn.onclick = function() { window.open(s.telegramLink, '_blank', 'noopener'); };
+                    } else {
+                        openTelegramBtn.style.display = 'none';
+                    }
+                }
+                if (openWhatsappBtn) {
+                    if (s.whatsappLink && s.whatsappLink.trim()) {
+                        openWhatsappBtn.style.display = 'inline-block';
+                        openWhatsappBtn.onclick = function() { window.open(s.whatsappLink, '_blank', 'noopener'); };
+                    } else {
+                        openWhatsappBtn.style.display = 'none';
+                    }
+                }
+            }
+
+            function isUrl(str) {
+                if (!str) return false;
+                return /^(https?:\/\/|tg:\/\/|mailto:)/i.test(str.trim());
+            }
+
+            function setupUserDataListener(uid) {
+                if (userDataListener) db.ref('users/' + uid).off('value', userDataListener);
+                if (!uid) return;
+                userDataListener = db.ref('users/' + uid).on('value', (snap) => {
+                    const data = snap.val();
+                    if (data) {
+                        state.balance = data.balance ?? 0;
+                        state.streak = data.streak ?? 0;
+                        state.totalBets = data.totalBets ?? 0;
+                        state.wins = data.wins ?? 0;
+                        state.userId = data.userId || state.userId;
+                        if (!state.currentUser) state.currentUser = {};
+                        state.currentUser.name = data.name || state.currentUser.name || 'Player';
+                        state.currentUser.email = data.email || state.currentUser.email || '';
+                        updateWalletUI();
+                        updateStreakUI();
+                        updateDrawerUI();
+                        renderGames();
+                    }
+                });
+            }
+
+            async function processPendingBets() {
+                if (!state.currentUid || state.isAnimating) return;
+                const uid = state.currentUid;
+                const betsRef = db.ref('bets/' + uid);
+                const snap = await betsRef.once('value');
+                const bets = snap.val();
+                if (!bets) return;
+                let balanceChanged = false;
+                for (const [betId, bet] of Object.entries(bets)) {
+                    if (bet.status !== 'pending') continue;
+                    const game = state.games.find(g => g.id === bet.gameId);
+                    if (!game) continue;
+                    if (game.status === 'closed' && game.winner) {
+                        const userChoice = bet.choice;
+                        const winner = game.winner;
+                        const isWin = (userChoice === winner);
+                        let newStatus, payout;
+                        if (isWin) {
+                            newStatus = 'won';
+                            payout = Math.floor(bet.amount * bet.odds);
+                            state.balance += payout;
+                            state.wins = (state.wins || 0) + 1;
+                            state.streak = (state.streak || 0) + 1;
+                        } else {
+                            newStatus = 'lost';
+                            payout = 0;
+                            state.streak = 0;
+                        }
+                        const updates = {
+                            status: newStatus,
+                            payout: payout,
+                            resolvedAt: new Date().toLocaleString()
+                        };
+                        await db.ref('bets/' + uid + '/' + betId).update(updates);
+                        const localBet = state.betHistory.find(b => b.id === betId);
+                        if (localBet) {
+                            localBet.status = newStatus;
+                            localBet.payout = payout;
+                            localBet.win = isWin;
+                        }
+                        balanceChanged = true;
+                    }
+                }
+                if (balanceChanged) {
+                    saveUserDataToFirebase();
+                    updateWalletUI();
+                    updateStreakUI();
+                    toast('Bet results updated!', 'success');
+                }
+            }
+
+            function saveUserDataToFirebase() {
+                if (!state.currentUid) return;
+                const updates = {
+                    balance: state.balance,
+                    streak: state.streak,
+                    totalBets: state.totalBets,
+                    wins: state.wins,
+                    userId: state.userId,
+                };
+                db.ref('users/' + state.currentUid).update(updates).catch(err => {
+                    console.error('Firebase save error:', err);
+                });
+            }
+
+            auth.onAuthStateChanged(async (firebaseUser) => {
+                if (firebaseUser) {
+                    const uid = firebaseUser.uid;
+                    state.currentUid = uid;
+                    const userSnap = await db.ref('users/' + uid).once('value');
+                    let userData = userSnap.val();
+                    if (!userData) {
+                        const name = firebaseUser.displayName || generatePlayerName();
+                        const email = firebaseUser.email || '';
+                        const uidGen = generateUserId();
+                        userData = {
+                            name: name,
+                            email: email,
+                            balance: 0,
+                            streak: 0,
+                            totalBets: 0,
+                            wins: 0,
+                            userId: uidGen,
+                            createdAt: firebase.database.ServerValue.TIMESTAMP
+                        };
+                        await db.ref('users/' + uid).set(userData);
+                        state.userId = uidGen;
+                    } else {
+                        state.userId = userData.userId || generateUserId();
+                        if (!userData.userId) {
+                            db.ref('users/' + uid + '/userId').set(state.userId);
+                        }
+                    }
+                    state.currentUser = {
+                        name: userData.name || 'Player',
+                        email: userData.email || '',
+                        uid: uid,
+                    };
+                    setupUserDataListener(uid);
+                    setupUserBetsListener(uid);
+                    setupPaymentRequestsListener(uid);
+                    updateDrawerUI();
+                    updateWalletUI();
+                    updateStreakUI();
+                    setupGamesListener();
+                    setupPaymentMethodsListener();
+                    setupQuickGameSettingsListener();
+                    setupSupportInfoListener();
+                    setupAppSettingsListener();
+                    setupMaintenanceListener();
+                    updateWalletMinMaxUI();
+                    updateMaintenanceUI();
+                    updateQuickGameUI();
+
+                    if (state.maintenanceMode) {
+                        if (currentScreen !== maintenanceScreen && currentScreen !== authScreen && currentScreen !== loadingScreen) {
+                            switchScreen(maintenanceScreen, 'right');
+                            screenHistory = [];
+                        }
+                    } else {
+                        if (currentScreen === authScreen || currentScreen === loadingScreen || currentScreen === maintenanceScreen) {
+                            loadingScreen.classList.add('fade-out');
+                            setTimeout(() => { switchScreen(dashScreen, 'right');
+                                screenHistory = []; }, 400);
+                        }
+                    }
+                    toast('Welcome, ' + (userData.name || 'Player') + '!', 'success');
+                    setTimeout(processPendingBets, 1500);
+                } else {
+                    state.currentUser = null;
+                    state.currentUid = null;
+                    state.balance = 0;
+                    state.streak = 0;
+                    state.totalBets = 0;
+                    state.wins = 0;
+                    state.betHistory = [];
+                    state.paymentHistory = [];
+                    state.userId = '';
+                    if (userDataListener && state.currentUid) {
+                        db.ref('users/' + state.currentUid).off('value', userDataListener);
+                        userDataListener = null;
+                    }
+                    if (betsListener) {
+                        db.ref('bets/' + state.currentUid).off('value', betsListener);
+                        betsListener = null;
+                    }
+                    if (paymentRequestsListener) {
+                        db.ref('paymentRequests/' + state.currentUid).off('value', paymentRequestsListener);
+                        paymentRequestsListener = null;
+                    }
+                    updateDrawerUI();
+                    updateWalletUI();
+                    updateStreakUI();
+                    screenHistory = [];
+                    if (currentScreen !== loadingScreen && currentScreen !== authScreen) {
+                        switchScreen(authScreen, 'left');
+                        toast('Signed out.', 'info');
+                    }
+                }
+            });
+
+            loginForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                const email = $('#loginEmail').value.trim();
+                const pass = $('#loginPass').value.trim();
+                loginError.textContent = '';
+                loginLoading.textContent = '';
+                if (!email || !pass) { loginError.textContent = 'Fill all fields.'; return; }
+                loginBtn.disabled = true;
+                loginLoading.textContent = 'Signing in...';
+                auth.signInWithEmailAndPassword(email, pass).then(() => {
+                    loginLoading.textContent = '';
+                    loginBtn.disabled = false;
+                }).catch((err) => {
+                    loginLoading.textContent = '';
+                    loginBtn.disabled = false;
+                    loginError.textContent = err.message || 'Login failed.';
+                });
+            });
+
+            signupForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                let name = $('#signupName').value.trim();
+                const email = $('#signupEmail').value.trim();
+                const pass = $('#signupPass').value.trim();
+                signupError.textContent = '';
+                signupLoading.textContent = '';
+                if (!email || !pass) { signupError.textContent = 'Fill email & password.'; return; }
+                if (pass.length < 6) { signupError.textContent = 'Password min 6 characters.'; return; }
+                if (!name) name = generatePlayerName();
+                const uidGen = generateUserId();
+                signupBtn.disabled = true;
+                signupLoading.textContent = 'Creating account...';
+                auth.createUserWithEmailAndPassword(email, pass).then((cred) => {
+                    return cred.user.updateProfile({ displayName: name }).then(() => {
+                        return db.ref('users/' + cred.user.uid).set({
+                            name: name,
+                            email: email,
+                            balance: 0,
+                            streak: 0,
+                            totalBets: 0,
+                            wins: 0,
+                            userId: uidGen,
+                            createdAt: firebase.database.ServerValue.TIMESTAMP,
+                        });
+                    });
+                }).then(() => {
+                    signupLoading.textContent = '';
+                    signupBtn.disabled = false;
+                    state.userId = uidGen;
+                    toast('Account created! Your ID: ' + uidGen, 'success');
+                }).catch((err) => {
+                    signupLoading.textContent = '';
+                    signupBtn.disabled = false;
+                    signupError.textContent = err.message || 'Signup failed.';
+                });
+            });
+
+            authTabs.forEach(tab => {
+                tab.addEventListener('click', function() {
+                    authTabs.forEach(t => t.classList.remove('active'));
+                    this.classList.add('active');
+                    const target = this.dataset.tab;
+                    document.querySelectorAll('.auth-form').forEach(f => f.classList.remove('show'));
+                    if (target === 'login') loginForm.classList.add('show');
+                    else signupForm.classList.add('show');
+                    loginError.textContent = '';
+                    signupError.textContent = '';
+                });
+            });
+
+            function renderGames() {
+                const category = state.selectedCategory || 'all';
+                let gamesToShow = [];
+                if (category === 'all') {
+                    gamesToShow = state.games.filter(g => g.status === 'live' || g.status === 'upcoming');
+                    feedTitle.textContent = 'Live & Upcoming';
+                } else {
+                    gamesToShow = state.games.filter(g => g.category === category && (g.status === 'live' || g.status ===
+                        'upcoming'));
+                    const sport = gamesToShow[0]?.sport || category;
+                    feedTitle.textContent = sport;
+                }
+                if (gamesToShow.length === 0) {
+                    gameContainer.innerHTML =
+                        '<div style="text-align:center;padding:40px 0;color:#4a5680;">No games available.</div>';
+                    return;
+                }
+                let html = '';
+                for (const g of gamesToShow) {
+                    const sel = selectedOdds[g.id] || null;
+                    const is1 = sel === '1',
+                        isX = sel === 'X',
+                        is2 = sel === '2';
+                    const isClosed = g.status === 'closed' || g.status === 'live';
+                    const disabledAttr = isClosed ? 'disabled' : '';
+                    let statusBadge = '';
+                    if (g.status === 'live') statusBadge = '<span class="game-live">LIVE</span>';
+                    else if (g.status === 'upcoming') statusBadge =
+                        '<span class="game-status-upcoming">UPCOMING</span>';
+                    else statusBadge = '<span class="game-status-closed">CLOSED</span>';
+
+                    const matchImgTag = g.imgUrl ? `<img class="match-img" src="${g.imgUrl}" alt="match" />` : '';
+                    const team1ImgTag = g.team1ImgUrl ?
+                        `<img class="team-img" src="${g.team1ImgUrl}" alt="${g.team1}" />` : '';
+                    const team2ImgTag = g.team2ImgUrl ?
+                        `<img class="team-img" src="${g.team2ImgUrl}" alt="${g.team2}" />` : '';
+
+                    let countdownHtml = '';
+                    if (g.matchTime && g.status === 'upcoming') {
+                        countdownHtml =
+                            `<div class="match-time">Starts in: <span class="countdown" data-time="${g.matchTime}" id="cd_${g.id}">--</span></div>`;
+                    } else if (g.status === 'live') {
+                        countdownHtml =
+                            '<div class="match-time">🔴 Match In Progress - <span class="closed-banner">Betting Closed</span></div>';
+                    } else if (g.status === 'closed') {
+                        countdownHtml = '<div class="match-time">⏹️ Match Finished</div>';
+                    }
+
+                    html += `
+                <div class="game-card" data-game-id="${g.id}">
+                  ${matchImgTag}
+                  <div class="game-top">
+                    <span class="game-icon">${g.sport==='Football'?'⚽':g.sport==='Cricket'?'🏏':g.sport==='Basketball'?'🏀':g.sport==='Tennis'?'🎾':'🥊'}</span>
+                    <span class="game-sport">${g.sport}</span>
+                    ${statusBadge}
+                  </div>
+                  <div class="teams">
+                    <span class="team">${team1ImgTag} ${g.team1}</span>
+                    <span class="vs">VS</span>
+                    <span class="team">${team2ImgTag} ${g.team2}</span>
+                  </div>
+                  ${countdownHtml}
+                  <div class="odds-row">
+                    <button class="odd-btn ${is1?'selected':''}" data-game="${g.id}" data-choice="1" data-odds="${g.odds1}" data-label="${g.team1}" ${disabledAttr}>
+                      <span class="label">${g.team1.split(' ').pop()}</span>
+                      <span class="value">${g.odds1.toFixed(2)}</span>
+                    </button>
+                    <button class="odd-btn ${isX?'selected':''}" data-game="${g.id}" data-choice="X" data-odds="${g.oddsX}" data-label="Draw" ${disabledAttr}>
+                      <span class="label">Draw</span>
+                      <span class="value">${g.oddsX.toFixed(2)}</span>
+                    </button>
+                    <button class="odd-btn ${is2?'selected':''}" data-game="${g.id}" data-choice="2" data-odds="${g.odds2}" data-label="${g.team2}" ${disabledAttr}>
+                      <span class="label">${g.team2.split(' ').pop()}</span>
+                      <span class="value">${g.odds2.toFixed(2)}</span>
+                    </button>
+                  </div>
+                </div>`;
+                }
+                gameContainer.innerHTML = html;
+
+                gameContainer.querySelectorAll('.countdown').forEach(el => {
+                    const matchTime = el.dataset.time;
+                    const gameId = el.id.replace('cd_', '');
+                    updateCountdown(el, matchTime, gameId);
+                });
+
+                gameContainer.querySelectorAll('.odd-btn:not([disabled])').forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        if (state.isAnimating) return;
+                        const gid = this.dataset.game;
+                        const choice = this.dataset.choice;
+                        const odds = parseFloat(this.dataset.odds);
+                        const game = state.games.find(g => g.id === gid);
+                        if (!game || game.status === 'live' || game.status === 'closed') {
+                            toast('Betting is closed for this match.', 'info');
+                            return;
+                        }
+                        const siblings = this.parentElement.querySelectorAll('.odd-btn');
+                        siblings.forEach(s => s.classList.remove('selected'));
+                        this.classList.add('selected');
+                        selectedOdds[gid] = choice;
+                        const teamLabel = choice === '1' ? game.team1 : choice === '2' ? game.team2 : 'Draw';
+                        openSlip({
+                            gameId: gid,
+                            choice: choice,
+                            odds: odds,
+                            label: `${game.team1} vs ${game.team2} - ${teamLabel}`
+                        });
+                    });
+                });
+            }
+
+            function updateCountdown(el, matchTime, gameId) {
+                const target = new Date(matchTime).getTime();
+                if (isNaN(target)) { el.textContent = 'Invalid date'; return; }
+                if (countdownIntervals[gameId]) {
+                    countdownIntervals[gameId].forEach(i => clearInterval(i));
+                }
+                countdownIntervals[gameId] = [];
+                const interval = setInterval(() => {
+                    const now = new Date().getTime();
+                    const diff = target - now;
+                    if (diff <= 0) {
+                        el.textContent = 'Started';
+                        clearInterval(interval);
+                        const game = state.games.find(g => g.id === gameId);
+                        if (game && game.status === 'upcoming') {
+                            game.status = 'live';
+                            db.ref('games/' + gameId + '/status').set('live');
+                            renderGames();
+                        }
+                        return;
+                    }
+                    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+                    const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                    const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+                    const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+                    let text = '';
+                    if (days > 0) text += days + 'd ';
+                    text += hours + 'h ' + minutes + 'm ' + seconds + 's';
+                    el.textContent = text;
+                }, 1000);
+                countdownIntervals[gameId].push(interval);
+            }
+
+            filterBar.addEventListener('click', function(e) {
+                const btn = e.target.closest('.filter-btn');
+                if (!btn) return;
+                filterBar.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                state.selectedCategory = btn.dataset.category;
+                renderGames();
+            });
+
+            function openSlip(bet) {
+                selectedBet = bet;
+                slipSelection.textContent = bet.label;
+                slipOdds.textContent = bet.odds.toFixed(2);
+                slipAmount.value = Math.max(state.appSettings.minBet || 15, 15);
+                slipError.textContent = '';
+                calculatePotential();
+                bettingSlip.classList.add('open');
+                slipOverlay.classList.add('show');
+            }
+
+            function closeSlip() {
+                bettingSlip.classList.remove('open');
+                slipOverlay.classList.remove('show');
+                selectedBet = null;
+            }
+
+            function calculatePotential() {
+                const amount = parseFloat(slipAmount.value) || 0;
+                const odds = parseFloat(slipOdds.textContent) || 1;
+                slipPotential.textContent = 'BDT' + (amount * odds).toFixed(2);
+            }
+
+            slipAmount.addEventListener('input', calculatePotential);
+            closeSlipBtn.addEventListener('click', closeSlip);
+            slipOverlay.addEventListener('click', closeSlip);
+
+            placeSlipBet.addEventListener('click', async function() {
+                if (!state.currentUid) { slipError.textContent = 'Please sign in first.'; return; }
+                if (!selectedBet) { slipError.textContent = 'No bet selected.'; return; }
+                const amount = parseFloat(slipAmount.value);
+                const minBet = state.appSettings.minBet || 15;
+                if (!amount || amount < minBet) { slipError.textContent = 'Minimum bet is BDT' + minBet + '.'; return; }
+                if (amount > state.balance) { slipError.textContent = 'Insufficient balance!'; return; }
+                const game = state.games.find(g => g.id === selectedBet.gameId);
+                if (game && (game.status === 'live' || game.status === 'closed')) {
+                    slipError.textContent = 'Betting is closed for this match.';
+                    return;
+                }
+                state.balance -= amount;
+                state.totalBets = (state.totalBets || 0) + 1;
+
+                const betId = randomId();
+                const betObj = {
+                    id: betId,
+                    gameId: selectedBet.gameId,
+                    choice: selectedBet.choice,
+                    amount: amount,
+                    odds: selectedBet.odds,
+                    label: selectedBet.label,
+                    status: 'pending',
+                    timestamp: new Date().toLocaleString()
+                };
+
+                await db.ref('bets/' + state.currentUid + '/' + betId).set(betObj);
+                if (!state.betHistory.find(b => b.id === betId)) {
+                    state.betHistory.push(betObj);
+                }
+                saveUserDataToFirebase();
+                updateWalletUI();
+                updateStreakUI();
+                closeSlip();
+                toast('Bet placed! Wait for the match result.', 'success');
+                renderGames();
+                selectedBet = null;
+            });
+
+            // --- Under/Over 7 Game ---
+            let uoChoice = 'under';
+            uoChoices.forEach(b => {
+                b.addEventListener('click', function() {
+                    uoChoices.forEach(x => x.classList.remove('selected'));
+                    this.classList.add('selected');
+                    uoChoice = this.dataset.choice;
+                });
+            });
+            uoChoices[0]?.classList.add('selected');
+
+            function getLosingDice(choice) {
+                let d1, d2, sum;
+                do {
+                    d1 = Math.floor(Math.random() * 6) + 1;
+                    d2 = Math.floor(Math.random() * 6) + 1;
+                    sum = d1 + d2;
+                } while (
+                    (choice === 'under' && sum < 7) ||
+                    (choice === 'seven' && sum === 7) ||
+                    (choice === 'over' && sum > 7)
+                );
+                return { d1, d2, sum };
+            }
+
+            function getWinningDice(choice) {
+                let d1, d2, sum;
+                do {
+                    d1 = Math.floor(Math.random() * 6) + 1;
+                    d2 = Math.floor(Math.random() * 6) + 1;
+                    sum = d1 + d2;
+                } while (
+                    (choice === 'under' && sum >= 7) ||
+                    (choice === 'seven' && sum !== 7) ||
+                    (choice === 'over' && sum <= 7)
+                );
+                return { d1, d2, sum };
+            }
+
+            uoBetBtn.addEventListener('click', function() {
+                if (!state.currentUid) { toast('Please sign in first.', 'error'); return; }
+                if (state.isAnimating) return;
+                const qs = state.quickGameSettings.underOver7;
+                if (!qs.enabled) { toast('Quick game is temporarily disabled.', 'error'); return; }
+                const amount = parseInt(uoAmount.value, 10);
+                const minBet = state.appSettings.minBet || 15;
+                if (!amount || amount < minBet) { toast('Minimum bet is BDT' + minBet + '.', 'error'); return; }
+                if (amount > state.balance) { toast('Insufficient balance!', 'error'); return; }
+
+                state.isAnimating = true;
+                uoBetBtn.disabled = true;
+                uoResult.textContent = '';
+                uoResult.className = 'quick-result';
+                diceSumDisplay.textContent = '';
+
+                dice1.classList.add('rolling');
+                dice2.classList.add('rolling');
+
+                let odd;
+                if (uoChoice === 'under') odd = 2.3;
+                else if (uoChoice === 'seven') odd = 5.7;
+                else odd = 2.3;
+
+                // Decide win based on winPercentage (overall probability)
+                const winPercentage = qs.winPercentage ?? 50;
+                let finalWin = (Math.random() * 100) < winPercentage;
+                if (qs.forceWin) {
+                    finalWin = true;
+                    // Reset forceWin after one use
+                    db.ref('quickGameSettings/underOver7/forceWin').set(false);
+                    state.quickGameSettings.underOver7.forceWin = false;
+                }
+
+                let diceVal1, diceVal2, diceSum;
+                if (finalWin) {
+                    const winDice = getWinningDice(uoChoice);
+                    diceVal1 = winDice.d1;
+                    diceVal2 = winDice.d2;
+                    diceSum = winDice.sum;
+                } else {
+                    const loseDice = getLosingDice(uoChoice);
+                    diceVal1 = loseDice.d1;
+                    diceVal2 = loseDice.d2;
+                    diceSum = loseDice.sum;
+                }
+
+                const wonAmount = Math.floor(amount * odd);
+                state.balance -= amount;
+                state.totalBets = (state.totalBets || 0) + 1;
+
+                const diceEmojis = ['', '⚀', '⚁', '⚂', '⚃', '⚄', '⚅'];
+
+                setTimeout(() => {
+                    dice1.classList.remove('rolling');
+                    dice2.classList.remove('rolling');
+                    dice1.textContent = diceEmojis[diceVal1];
+                    dice2.textContent = diceEmojis[diceVal2];
+                    diceSumDisplay.textContent = 'Sum: ' + diceSum;
+
+                    const label = uoChoice === 'under' ? 'Under 7' : uoChoice === 'seven' ? 'Only 7' : 'Over 7';
+                    if (finalWin) {
+                        state.balance += wonAmount;
+                        state.wins = (state.wins || 0) + 1;
+                        state.streak = (state.streak || 0) + 1;
+                        uoResult.textContent = label + ' wins! Sum=' + diceSum + '. You won BDT' + wonAmount + '.';
+                        uoResult.className = 'quick-result win';
+                        toast('You won BDT' + wonAmount + '!', 'success');
+                    } else {
+                        state.streak = 0;
+                        uoResult.textContent = label + ' lost. Sum=' + diceSum + '. You lost BDT' + amount + '.';
+                        uoResult.className = 'quick-result lose';
+                        toast('You lost BDT' + amount + '.', 'error');
+                    }
+                    const betEntry = {
+                        id: randomId(),
+                        timestamp: new Date().toLocaleString(),
+                        game: 'Under/Over 7 (' + uoChoice + ')',
+                        amount: amount,
+                        odds: odd,
+                        win: finalWin,
+                        payout: finalWin ? wonAmount : 0
+                    };
+                    if (!state.betHistory.find(b => b.id === betEntry.id)) {
+                        state.betHistory.push(betEntry);
+                    }
+                    saveUserDataToFirebase();
+                    updateWalletUI();
+                    updateStreakUI();
+                    state.isAnimating = false;
+                    uoBetBtn.disabled = false;
+                }, 900);
+            });
+
+            function openDrawer() { drawer.classList.add('open');
+                drawerOverlay.classList.add('show'); }
+
+            function closeDrawer() { drawer.classList.remove('open');
+                drawerOverlay.classList.remove('show'); }
+            menuBtn.addEventListener('click', openDrawer);
+            drawerOverlay.addEventListener('click', closeDrawer);
+
+            document.querySelectorAll('.drawer-item').forEach(item => {
+                item.addEventListener('click', function() {
+                    const action = this.dataset.action;
+                    closeDrawer();
+                    if (state.maintenanceMode && action !== 'logout' && action !== 'wallet') {
+                        toast('App is under maintenance.', 'info');
+                        return;
+                    }
+                    if (action === 'wallet') openWalletModal();
+                    else if (action === 'home') navigateTo(dashScreen, 'right');
+                    else if (action === 'quickgame') navigateTo(quickgameScreen, 'right');
+                    else if (action === 'history') {
+                        if (!state.currentUid) { toast('Please sign in first.', 'error'); return; }
+                        renderPaymentHistory();
+                        navigateTo(historyScreen, 'right');
+                    } else if (action === 'sport-bet-history') {
+                        if (!state.currentUid) { toast('Please sign in first.', 'error'); return; }
+                        renderSportBetHistory();
+                        navigateTo(sportBetHistoryScreen, 'right');
+                    } else if (action === 'profile') {
+                        if (!state.currentUid) { toast('Please sign in first.', 'error'); return; }
+                        loadProfile();
+                        navigateTo(profileScreen, 'right');
+                    } else if (action === 'support') navigateTo(supportScreen, 'right');
+                    else if (action === 'theme') toggleTheme();
+                    else if (action === 'logout') {
+                        auth.signOut().catch(() => {});
+                        toast('Signed out.', 'info');
+                    }
+                });
+            });
+
+            bottomNav.querySelectorAll('button').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const targetId = this.dataset.screen;
+                    const target = document.getElementById(targetId);
+                    if (target) {
+                        if ((targetId === 'history-screen' || targetId === 'profile-screen' || targetId ===
+                                'sport-bet-history-screen') && !state.currentUid) {
+                            toast('Please sign in first.', 'error');
+                            return;
+                        }
+                        if (state.maintenanceMode && targetId !== 'dash-screen') {
+                            toast('App is under maintenance.', 'info');
+                            return;
+                        }
+                        if (targetId === 'history-screen') renderPaymentHistory();
+                        if (targetId === 'profile-screen') loadProfile();
+                        if (targetId === 'sport-bet-history-screen') renderSportBetHistory();
+                        navigateTo(target, 'right');
+                    }
+                });
+            });
+
+            historyBackBtn.addEventListener('click', () => goBack());
+            profileBackBtn.addEventListener('click', () => goBack());
+            supportBackBtn.addEventListener('click', () => goBack());
+            sportBetHistoryBackBtn.addEventListener('click', () => goBack());
+            $('#maintenanceLogoutBtn')?.addEventListener('click', () => {
+                auth.signOut().catch(() => {});
+            });
+
+            function renderPaymentHistory() {
+                const payments = state.paymentHistory || [];
+                if (payments.length === 0) {
+                    paymentHistoryList.innerHTML =
+                        '<div style="text-align:center;padding:40px 0;color:#4a5680;">No payment requests yet.</div>';
+                    return;
+                }
+                let html = '';
+                for (let i = payments.length - 1; i >= 0; i--) {
+                    const p = payments[i];
+                    const statusClass = p.status === 'approved' ? 'approved' : p.status === 'rejected' ? 'rejected' :
+                        'pending';
+                    html += `
+                <div class="payment-item">
+                  <div class="left">
+                    <div>${p.type==='deposit'?'Deposit':'Withdraw'}</div>
+                    <div style="font-size:12px;color:#7f8fa6;">${p.timestamp}</div>
+                    <div style="font-size:12px;color:#7f8fa6;">${p.method||''} ${p.txnId?'| Txn: '+p.txnId:''} ${p.phone?'| Phone: '+p.phone:''}</div>
+                  </div>
+                  <div class="status ${statusClass}">BDT${p.amount} - ${p.status}</div>
+                </div>`;
+                }
+                paymentHistoryList.innerHTML = html;
+            }
+
+            function loadProfile() {
+                if (state.currentUser) {
+                    profileName.value = state.currentUser.name || '';
+                    profileEmail.value = state.currentUser.email || '';
+                    profileTotalBets.textContent = state.totalBets || 0;
+                    profileWins.textContent = state.wins || 0;
+                    profileStreak.textContent = state.streak || 0;
+                    profileAvatar.textContent = (state.currentUser.name || 'N')[0].toUpperCase();
+                    profileDisplayName.textContent = state.currentUser.name || 'Player';
+                    profileUserId.textContent = state.userId || 'NXP-XXXXX';
+                }
+                const bets = state.betHistory || [];
+                if (bets.length === 0) {
+                    profileBetHistory.innerHTML =
+                        '<div style="color:#4a5680;text-align:center;padding:16px;">No bets placed yet.</div>';
+                } else {
+                    let html = '';
+                    for (let i = bets.length - 1; i >= Math.max(0, bets.length - 50); i--) {
+                        const b = bets[i];
+                        let statusText, statusClass;
+                        if (b.status === 'pending') {
+                            statusText = 'Pending';
+                            statusClass = 'pending';
+                        } else if (b.status === 'won') {
+                            statusText = 'Won BDT' + (b.payout || 0);
+                            statusClass = 'won';
+                        } else if (b.status === 'lost') {
+                            statusText = 'Lost';
+                            statusClass = 'lost';
+                        } else {
+                            statusText = b.win ? 'Won BDT' + (b.payout || 0) : 'Lost';
+                            statusClass = b.win ? 'won' : 'lost';
+                        }
+                        html += `
+                  <div class="payment-item">
+                    <div class="left">
+                      <div>${b.game || b.label || 'Bet'}</div>
+                      <div style="font-size:11px;color:#7f8fa6;">${b.timestamp}</div>
+                    </div>
+                    <div class="status ${statusClass}">BDT${b.amount} - ${statusText}</div>
+                  </div>`;
+                    }
+                    profileBetHistory.innerHTML = html;
+                }
+                const payments = state.paymentHistory || [];
+                if (payments.length === 0) {
+                    profilePaymentHistory.innerHTML =
+                        '<div style="color:#4a5680;text-align:center;padding:16px;">No payment requests yet.</div>';
+                } else {
+                    let html = '';
+                    for (let i = payments.length - 1; i >= Math.max(0, payments.length - 50); i--) {
+                        const p = payments[i];
+                        const statusClass = p.status === 'approved' ? 'approved' : p.status === 'rejected' ? 'rejected' :
+                            'pending';
+                        html += `
+                  <div class="payment-item">
+                    <div class="left">
+                      <div>${p.type==='deposit'?'Deposit':'Withdraw'}</div>
+                      <div style="font-size:11px;color:#7f8fa6;">${p.timestamp}</div>
+                    </div>
+                    <div class="status ${statusClass}">BDT${p.amount} - ${p.status}</div>
+                  </div>`;
+                    }
+                    profilePaymentHistory.innerHTML = html;
+                }
+            }
+
+            profileSaveBtn.addEventListener('click', function() {
+                if (!state.currentUid) { toast('Not logged in.', 'error'); return; }
+                const name = profileName.value.trim();
+                const email = profileEmail.value.trim();
+                if (!name || !email) { toast('Name and email required.', 'error'); return; }
+                db.ref('users/' + state.currentUid + '/name').set(name);
+                db.ref('users/' + state.currentUid + '/email').set(email);
+                state.currentUser.name = name;
+                state.currentUser.email = email;
+                updateDrawerUI();
+                loadProfile();
+                toast('Profile saved!', 'success');
+            });
+
+            document.querySelectorAll('.copy-support-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const targetId = this.dataset.copy;
+                    const el = document.getElementById(targetId);
+                    const textToCopy = el ? (el.textContent || '').replace(/^\s+|\s+$/g, '') : '';
+                    if (textToCopy && textToCopy !== 'Not set' && textToCopy !== 'Loading...') {
+                        navigator.clipboard?.writeText(textToCopy).then(() => {
+                            toast('Copied!', 'info');
+                        }).catch(() => {
+                            toast('Copy failed.', 'error');
+                        });
+                    } else {
+                        toast('No info to copy.', 'info');
+                    }
+                });
+            });
+
+            function toggleTheme() {
+                document.body.classList.toggle('light');
+                const isLight = document.body.classList.contains('light');
+                toast(isLight ? 'Light mode on' : 'Dark mode on', 'info');
+                localStorage.setItem('nexusplay_theme', isLight ? 'light' : 'dark');
+            }
+            (function loadTheme() {
+                if (localStorage.getItem('nexusplay_theme') === 'light') document.body.classList.add('light');
+            })();
+
+            function openWalletModal() {
+                modalBalance.textContent = Math.floor(state.balance || 0);
+                modalOverlay.classList.add('show');
+                updateMaintenanceUI();
+                if (!state.maintenanceMode) {
+                    depositForm.classList.add('show');
+                    withdrawForm.classList.remove('show');
+                    modalTabs.forEach(t => t.classList.toggle('active', t.dataset.tab === 'deposit'));
+                    populateDepositMethods();
+                    populateWithdrawMethods();
+                }
+                depositError.textContent = '';
+                withdrawError.textContent = '';
+                depositAmount.value = '';
+                depositTxnId.value = '';
+                depositPhone.value = '';
+                withdrawAmount.value = '';
+                withdrawNumber.value = '';
+                depositMethodInfo.style.display = 'none';
+                updateWalletMinMaxUI();
+            }
+
+            modalTabs.forEach(tab => {
+                tab.addEventListener('click', function() {
+                    if (state.maintenanceMode) return;
+                    modalTabs.forEach(t => t.classList.remove('active'));
+                    this.classList.add('active');
+                    if (this.dataset.tab === 'deposit') {
+                        depositForm.classList.add('show');
+                        withdrawForm.classList.remove('show');
+                        populateDepositMethods();
+                    } else {
+                        depositForm.classList.remove('show');
+                        withdrawForm.classList.add('show');
+                        populateWithdrawMethods();
+                    }
+                });
+            });
+
+            function populateDepositMethods() {
+                const methods = state.paymentMethods.deposit || [];
+                depositMethodSelect.innerHTML = '<option value="">Select method</option>';
+                methods.forEach(m => {
+                    depositMethodSelect.innerHTML +=
+                        `<option value="${m.id}" data-img="${m.imgUrl||''}" data-address="${m.address||''}" data-description="${m.description||''}">${m.name}</option>`;
+                });
+                depositMethodSelect.onchange = function() {
+                    const opt = this.options[this.selectedIndex];
+                    if (opt.value) {
+                        depositMethodInfo.style.display = 'flex';
+                        depositMethodImg.src = opt.dataset.img || '';
+                        depositAddress.textContent = opt.dataset.address || '';
+                        depositDescription.textContent = opt.dataset.description || '';
+                    } else {
+                        depositMethodInfo.style.display = 'none';
+                    }
+                };
+            }
+
+            function populateWithdrawMethods() {
+                const methods = state.paymentMethods.withdraw || [];
+                withdrawMethodSelect.innerHTML = '<option value="">Select method</option>';
+                methods.forEach(m => {
+                    withdrawMethodSelect.innerHTML += `<option value="${m.id}">${m.name}</option>`;
+                });
+            }
+
+            copyDepositAddress.addEventListener('click', function() {
+                const addr = depositAddress.textContent;
+                if (addr) {
+                    navigator.clipboard?.writeText(addr).then(() => toast('Address copied!', 'info')).catch(() => toast(
+                        'Copy failed.', 'error'));
+                }
+            });
+
+            submitDepositBtn.addEventListener('click', function() {
+                if (!state.currentUid) { toast('Sign in first.', 'error'); return; }
+                if (state.maintenanceMode) { toast('Under maintenance. Try later.', 'error'); return; }
+                const methodId = depositMethodSelect.value;
+                const amount = parseInt(depositAmount.value, 10);
+                const txnId = depositTxnId.value.trim();
+                const phone = depositPhone.value.trim();
+                const minDep = state.appSettings.minDeposit || 100;
+                if (!methodId || !amount || amount < minDep || !txnId || !phone) {
+                    depositError.textContent = 'Please fill all fields. Min deposit: BDT' + minDep + '.';
+                    return;
+                }
+                const method = state.paymentMethods.deposit.find(m => m.id === methodId);
+                const entry = {
+                    type: 'deposit',
+                    userId: state.currentUid,
+                    amount: amount,
+                    txnId: txnId,
+                    phone: phone,
+                    method: method ? method.name : 'Unknown',
+                    status: 'pending',
+                    timestamp: new Date().toLocaleString()
+                };
+                db.ref('paymentRequests/' + state.currentUid).push(entry).then(() => {
+                    toast('Deposit request submitted. Await admin approval.', 'info');
+                    modalOverlay.classList.remove('show');
+                });
+            });
+
+            submitWithdrawBtn.addEventListener('click', function() {
+                if (!state.currentUid) { toast('Sign in first.', 'error'); return; }
+                if (state.maintenanceMode) { toast('Under maintenance. Try later.', 'error'); return; }
+                const methodId = withdrawMethodSelect.value;
+                const number = withdrawNumber.value.trim();
+                const amount = parseInt(withdrawAmount.value, 10);
+                const minWith = state.appSettings.minWithdraw || 100;
+                const maxWith = state.appSettings.maxWithdraw || 50000;
+                if (!methodId || !number || !amount || amount < minWith) {
+                    withdrawError.textContent = 'Please fill all fields. Min withdraw: BDT' + minWith + '.';
+                    return;
+                }
+                if (amount > maxWith) {
+                    withdrawError.textContent = 'Max withdraw is BDT' + maxWith + '.';
+                    return;
+                }
+                if (amount > state.balance) {
+                    withdrawError.textContent = 'Insufficient balance!';
+                    return;
+                }
+                state.balance -= amount;
+                const method = state.paymentMethods.withdraw.find(m => m.id === methodId);
+                const entry = {
+                    type: 'withdraw',
+                    userId: state.currentUid,
+                    amount: amount,
+                    phone: number,
+                    method: method ? method.name : 'Unknown',
+                    status: 'pending',
+                    timestamp: new Date().toLocaleString()
+                };
+                db.ref('paymentRequests/' + state.currentUid).push(entry).then(() => {
+                    saveUserDataToFirebase();
+                    updateWalletUI();
+                    toast('Withdraw request submitted. BDT' + amount + ' deducted. Await admin approval.', 'info');
+                    modalOverlay.classList.remove('show');
+                });
+            });
+
+            walletPill.addEventListener('click', openWalletModal);
+            closeModalBtn.addEventListener('click', () => modalOverlay.classList.remove('show'));
+            modalOverlay.addEventListener('click', function(e) { if (e.target === this) modalOverlay.classList.remove(
+                    'show'); });
+
+            function renderSportBetHistory() {
+                const allBets = state.betHistory || [];
+                const sportBets = allBets.filter(b => {
+                    if (!b.gameId) return false;
+                    const game = state.games.find(g => g.id === b.gameId);
+                    if (game) {
+                        const sport = (game.sport || '').toLowerCase();
+                        return sport === 'cricket' || sport === 'football';
+                    }
+                    return true;
+                });
+
+                if (sportBets.length === 0) {
+                    sportBetList.innerHTML = '<div style="text-align:center;padding:40px 0;color:#4a5680;">No sport bets yet.</div>';
+                    return;
+                }
+
+                // Ensure no duplicates by ID
+                const seenIds = new Set();
+                const uniqueBets = [];
+                for (const b of sportBets) {
+                    if (!seenIds.has(b.id)) {
+                        seenIds.add(b.id);
+                        uniqueBets.push(b);
+                    }
+                }
+
+                let html = '';
+                for (let i = uniqueBets.length - 1; i >= 0; i--) {
+                    const b = uniqueBets[i];
+                    const game = state.games.find(g => g.id === b.gameId);
+                    const teams = game ? `${game.team1} vs ${game.team2}` : 'Unknown Match';
+                    const sport = game ? game.sport : 'Sport';
+                    const statusText = b.status === 'pending' ? 'Pending' : b.status === 'won' ? 'Won' : b.status ===
+                        'lost' ? 'Lost' : (b.win ? 'Won' : 'Lost');
+                    const statusClass = (b.status === 'pending') ? 'pending' : (b.status === 'won' || b.win) ? 'won' :
+                        'lost';
+                    html += `
+                <div class="payment-item" data-bet-id="${b.id}">
+                  <div class="left">
+                    <div>${sport} · ${teams}</div>
+                    <div style="font-size:12px;color:#7f8fa6;">${b.timestamp}</div>
+                    <div style="font-size:12px;color:#a29bfe;">Odds: ${b.odds} | Choice: ${b.choice || b.label}</div>
+                  </div>
+                  <div class="status ${statusClass}">BDT${b.amount} - ${statusText}</div>
+                </div>`;
+                }
+                sportBetList.innerHTML = html;
+
+                sportBetList.querySelectorAll('.payment-item').forEach(item => {
+                    item.addEventListener('click', function() {
+                        const betId = this.dataset.betId;
+                        const bet = state.betHistory.find(b => b.id === betId);
+                        if (!bet) return;
+                        const game = state.games.find(g => g.id === bet.gameId);
+                        const gameId = bet.gameId || 'N/A';
+                        const teams = game ? `${game.team1} vs ${game.team2}` : 'Unknown Match';
+                        const sport = game ? game.sport : 'Unknown Sport';
+                        const matchTime = game ? new Date(game.matchTime).toLocaleString() : 'N/A';
+                        const statusText = bet.status === 'pending' ? 'Pending' : bet.status === 'won' ? 'Won' : bet
+                            .status === 'lost' ? 'Lost' : (bet.win ? 'Won' : 'Lost');
+                        betDetailContent.innerHTML = `
+                  <p><strong>Game ID:</strong> ${gameId}</p>
+                  <p><strong>Sport:</strong> ${sport}</p>
+                  <p><strong>Match:</strong> ${teams}</p>
+                  <p><strong>Match Time:</strong> ${matchTime}</p>
+                  <p><strong>Your Choice:</strong> ${bet.choice || bet.label}</p>
+                  <p><strong>Odds:</strong> ${bet.odds}</p>
+                  <p><strong>Amount:</strong> BDT${bet.amount}</p>
+                  <p><strong>Status:</strong> ${statusText}</p>
+                  ${bet.payout ? `<p><strong>Payout:</strong> BDT${bet.payout}</p>` : ''}
+                  <p><strong>Bet Time:</strong> ${bet.timestamp}</p>
+                `;
+                        betDetailModal.classList.add('show');
+                    });
+                });
+            }
+
+            closeBetDetailBtn.addEventListener('click', () => {
+                betDetailModal.classList.remove('show');
+            });
+            betDetailModal.addEventListener('click', function(e) {
+                if (e.target === this) betDetailModal.classList.remove('show');
+            });
+
+            let loadProgress = 0;
+            const bar = document.getElementById('loadBar');
+            const percent = document.getElementById('loadPercent');
+            const loadInterval = setInterval(() => {
+                loadProgress += 2 + Math.random() * 4;
+                if (loadProgress > 100) loadProgress = 100;
+                if (bar) bar.style.width = loadProgress + '%';
+                if (percent) percent.textContent = Math.floor(loadProgress) + '%';
+                if (loadProgress >= 100) {
+                    clearInterval(loadInterval);
+                    setupGamesListener();
+                    setupPaymentMethodsListener();
+                    setupQuickGameSettingsListener();
+                    setupSupportInfoListener();
+                    setupAppSettingsListener();
+                    setupMaintenanceListener();
+                    updateWalletMinMaxUI();
+                    updateMaintenanceUI();
+                    updateQuickGameUI();
+                    setTimeout(() => {
+                        loadingScreen.classList.add('fade-out');
+                        setTimeout(() => {
+                            if (!auth.currentUser) {
+                                switchScreen(authScreen, 'right');
+                                screenHistory = [];
+                            }
+                        }, 500);
+                    }, 500);
+                }
+            }, 120);
+
+            window.__nexus = { state, db, auth, renderGames, navigateTo, goBack };
+
+            const badgeDot = document.querySelector('.fb-dot');
+            if (badgeDot) {
+                const connectedRef = db.ref('.info/connected');
+                connectedRef.on('value', (snap) => {
+                    if (snap.val() === true) { badgeDot.style.background = '#00b894';
+                        badgeDot.title = 'Connected'; } else { badgeDot.style.background =
+                            '#fd79a8';
+                        badgeDot.title = 'Disconnected'; }
+                });
+            }
+
+            document.getElementById('firebaseBadge')?.addEventListener('click', function() {
+                toast('Account Active • Real-time sync active', 'info', 2500);
+            });
+
+        })();
+    </script>
+</body>
+</html>
