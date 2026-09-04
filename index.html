@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-    <title>NexusPlay – USDT Betting</title>
+    <title>NexusPlay – TG Login & Referral</title>
 
     <script src="https://www.gstatic.com/firebasejs/11.0.1/firebase-app-compat.js">
     </script>
@@ -33,6 +33,8 @@
             --red-gradient: linear-gradient(135deg, #ff0000, #cc0000);
             --success-gradient: linear-gradient(135deg, #2ecc71, #27ae60);
             --usdt-color: #26a17b;
+            --tg-bg: #e8ecf0;
+            --tg-blue: #0088cc;
         }
 
         * {
@@ -225,6 +227,57 @@
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
+        }
+        .tg-login-btn {
+            width: 100%;
+            padding: 14px;
+            background: var(--tg-blue);
+            color: #fff;
+            border: none;
+            border-radius: var(--radius-sm);
+            font-weight: 700;
+            font-size: 16px;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            box-shadow: 0 4px 12px rgba(0, 136, 204, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 16px;
+        }
+        .tg-login-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0, 136, 204, 0.4);
+        }
+        .tg-login-btn:active {
+            transform: scale(0.97);
+        }
+        .tg-login-btn img {
+            width: 24px;
+            height: 24px;
+        }
+        .auth-divider {
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 13px;
+            margin: 8px 0 16px;
+            position: relative;
+        }
+        .auth-divider::before,
+        .auth-divider::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            width: 30%;
+            height: 1px;
+            background: #ddd;
+        }
+        .auth-divider::before {
+            left: 0;
+        }
+        .auth-divider::after {
+            right: 0;
         }
         .auth-tabs {
             display: flex;
@@ -1763,6 +1816,13 @@
         <div class="screen" id="auth-screen">
             <div class="auth-box">
                 <div class="mini-logo">NexusPlay</div>
+                <button class="tg-login-btn" id="tgLoginBtn">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="white">
+                        <path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/>
+                    </svg>
+                    Login with Telegram
+                </button>
+                <div class="auth-divider">or</div>
                 <div class="auth-tabs">
                     <button class="auth-tab active" data-tab="login">Sign In</button>
                     <button class="auth-tab" data-tab="signup">Sign Up</button>
@@ -1821,7 +1881,7 @@
                     <div class="streak-badge">Streak <span id="streakCount">0</span></div>
                 </div>
                 <div id="gameCardsContainer"></div>
-                <div style="text-align:center;padding:24px 0;color:var(--text-muted);font-size:13px;">NexusPlay · USDT Edition</div>
+                <div style="text-align:center;padding:24px 0;color:var(--text-muted);font-size:13px;">NexusPlay · TG Auth</div>
             </div>
         </div>
 
@@ -1922,6 +1982,7 @@
                     <div class="drawer-avatar" id="profileAvatar" style="width:70px;height:70px;font-size:28px;margin:0 auto;">N</div>
                     <div style="font-weight:700;font-size:18px;margin-top:8px;" id="profileDisplayName">Player</div>
                     <div style="color:var(--primary-red);font-size:12px;font-weight:600;letter-spacing:0.5px;" id="profileUserId">NXP-XXXXX</div>
+                    <div style="font-size:11px;color:var(--text-muted);margin-top:2px;" id="profileTgId">TG: not linked</div>
                 </div>
 
                 <!-- Referral Card -->
@@ -1931,7 +1992,7 @@
                     <div class="ref-code" id="refCodeDisplay">NXP-XXXXX</div>
                     <div style="display:flex;justify-content:center;gap:8px;flex-wrap:wrap;">
                         <button class="copy-ref-btn" id="copyRefCode">Copy Code</button>
-                        <button class="copy-ref-btn" id="copyRefLink">Copy Link</button>
+                        <button class="copy-ref-btn" id="copyRefLink">Copy TG Link</button>
                     </div>
                     <div class="ref-stats">
                         <span>👥 <strong id="refTotalCount">0</strong> Referrals</span>
@@ -2041,7 +2102,7 @@
             <button class="drawer-item" data-action="logout"><span class="icon">🚪</span> Sign Out</button>
         </div>
         <div class="drawer-footer">
-            <div>NexusPlay · USDT v6.0</div>
+            <div>NexusPlay · TG Auth v6.0</div>
             <div style="margin-top:4px;">Bet with Confidence</div>
         </div>
     </div>
@@ -2073,6 +2134,7 @@
         <button data-screen="sport-bet-history-screen"><span class="nav-icon">⚽</span> Sports Bet</button>
     </div>
 
+    <script src="https://telegram.org/js/telegram-widget.js?22" defer></script>
     <script>
         (function() {
             'use strict';
@@ -2125,6 +2187,8 @@
                 referralCount: 0,
                 referralEarned: 0,
                 referredBy: '',
+                tgId: null,
+                tgUsername: null,
             };
 
             let globalListenersSetup = false;
@@ -2218,6 +2282,7 @@
             const signupBtn = $('#signupBtn');
             const authTabs = $$('.auth-tab');
             const signupRefCode = $('#signupRefCode');
+            const tgLoginBtn = $('#tgLoginBtn');
 
             const paymentHistoryList = $('#paymentHistoryList');
             const historyBackBtn = $('#historyBackBtn');
@@ -2231,6 +2296,7 @@
             const profileAvatar = $('#profileAvatar');
             const profileDisplayName = $('#profileDisplayName');
             const profileUserId = $('#profileUserId');
+            const profileTgId = $('#profileTgId');
             const profileBetHistory = $('#profileBetHistory');
             const profilePaymentHistory = $('#profilePaymentHistory');
 
@@ -2297,6 +2363,213 @@
                 toastContainer.appendChild(el);
                 setTimeout(() => { el.classList.add('out');
                     setTimeout(() => el.remove(), 400); }, duration);
+            }
+
+            function getDeviceId() {
+                let did = localStorage.getItem('nexus_device_id');
+                if (!did) {
+                    did = 'DEV-' + Math.random().toString(36).substring(2, 10).toUpperCase();
+                    localStorage.setItem('nexus_device_id', did);
+                }
+                return did;
+            }
+
+            function isDeviceUsedForReferral() {
+                return localStorage.getItem('nexus_ref_used') === 'true';
+            }
+
+            function markDeviceReferralUsed() {
+                localStorage.setItem('nexus_ref_used', 'true');
+            }
+
+            // ─── Telegram Auth ──────────────────────────────────────────────────────
+
+            async function loginWithTelegram() {
+                try {
+                    // Use Telegram Web App Widget
+                    if (typeof Telegram !== 'undefined' && Telegram.Login) {
+                        Telegram.Login.auth({
+                            bot_id: '8995976968',
+                            request_access: 'write',
+                            on_auth: async (user) => {
+                                // user object from Telegram
+                                const tgId = user.id;
+                                const tgUsername = user.username || user.first_name || 'TG_User';
+                                state.tgId = tgId;
+                                state.tgUsername = tgUsername;
+                                await handleTelegramLogin(tgId, tgUsername, user);
+                            },
+                            on_error: (err) => {
+                                toast('Telegram login error: ' + err, 'error');
+                            }
+                        });
+                    } else {
+                        // Fallback: simulate Telegram login using bot redirect (for demo)
+                        // In production, use the Telegram Widget properly.
+                        // For this demo, we'll prompt user to enter Telegram ID manually.
+                        const tgId = prompt('Enter your Telegram ID (for demo):');
+                        if (tgId) {
+                            state.tgId = tgId;
+                            state.tgUsername = 'TG_User_' + tgId;
+                            await handleTelegramLogin(tgId, state.tgUsername, { id: tgId, username: state.tgUsername });
+                        }
+                    }
+                } catch (e) {
+                    toast('Telegram login error: ' + e.message, 'error');
+                }
+            }
+
+            async function handleTelegramLogin(tgId, tgUsername, userData) {
+                // Check if user already exists with this TG ID
+                const tgSnap = await db.ref('telegramUsers').orderByChild('tgId').equalTo(tgId).once('value');
+                let uid = null;
+                let existingUser = false;
+
+                if (tgSnap.exists()) {
+                    const data = tgSnap.val();
+                    const key = Object.keys(data)[0];
+                    uid = data[key].uid;
+                    existingUser = true;
+                }
+
+                if (existingUser && uid) {
+                    // Sign in with Firebase using custom token or just set state
+                    // For simplicity, we'll fetch user data from Firebase
+                    const userSnap = await db.ref('users/' + uid).once('value');
+                    if (userSnap.exists()) {
+                        const userData = userSnap.val();
+                        state.currentUid = uid;
+                        state.currentUser = {
+                            name: userData.name || 'Player',
+                            email: userData.email || '',
+                            uid: uid,
+                            tgId: tgId,
+                            tgUsername: tgUsername,
+                        };
+                        state.userId = userData.userId || generateUserId();
+                        state.referralCode = userData.referralCode || '';
+                        state.referralCount = userData.referralCount || 0;
+                        state.referralEarned = userData.referralEarned || 0;
+                        state.balance = userData.balance || 0;
+                        state.streak = userData.streak || 0;
+                        state.totalBets = userData.totalBets || 0;
+                        state.wins = userData.wins || 0;
+                        setupUserSpecificListeners(uid);
+                        updateDrawerUI();
+                        updateWalletUI();
+                        updateStreakUI();
+                        updateReferralUI();
+                        updateMaintenanceUI();
+                        updateQuickGameUI();
+                        updateWalletMinMaxUI();
+                        if (currentScreen === authScreen || currentScreen === loadingScreen) {
+                            switchScreen(dashScreen, 'right');
+                            screenHistory = [];
+                        }
+                        toast('Welcome back, ' + (userData.name || 'Player') + '!', 'success');
+                        return;
+                    }
+                }
+
+                // New user - create account with TG ID
+                const name = userData.username || userData.first_name || 'TG_Player';
+                const email = 'tg_' + tgId + '@nexus.tg';
+                const uidGen = generateUserId();
+                const refCode = generateRefCode();
+
+                // Check if there's a referral code in URL
+                const params = new URLSearchParams(window.location.search);
+                const refCodeFromUrl = params.get('ref');
+                let referralApplied = false;
+                if (refCodeFromUrl && !isDeviceUsedForReferral()) {
+                    // Apply referral
+                    const refSnap = await db.ref('referrals').orderByChild('code').equalTo(refCodeFromUrl.toUpperCase())
+                        .once('value');
+                    if (refSnap.exists()) {
+                        const refData = refSnap.val();
+                        const refKey = Object.keys(refData)[0];
+                        const referrerUid = refData[refKey].uid;
+                        if (referrerUid) {
+                            // Add bonus to referrer
+                            const referrerSnap = await db.ref('users/' + referrerUid).once('value');
+                            if (referrerSnap.exists()) {
+                                const currentBalance = referrerSnap.val().balance || 0;
+                                await db.ref('users/' + referrerUid + '/balance').set(currentBalance + REFERRAL_BONUS);
+                                const currentCount = referrerSnap.val().referralCount || 0;
+                                await db.ref('users/' + referrerUid + '/referralCount').set(currentCount + 1);
+                                await db.ref('users/' + referrerUid + '/referrals/' + tgId).set(true);
+                                const earned = referrerSnap.val().referralEarned || 0;
+                                await db.ref('users/' + referrerUid + '/referralEarned').set(earned + REFERRAL_BONUS);
+                                await db.ref('referrals/' + refKey + '/count').set(currentCount + 1);
+                                await db.ref('referrals/' + refKey + '/referredUsers/' + tgId).set(true);
+                                markDeviceReferralUsed();
+                                referralApplied = true;
+                                toast('Referral bonus applied! You earned $' + REFERRAL_BONUS + ' USDT!', 'success');
+                            }
+                        }
+                    }
+                }
+
+                const userObj = {
+                    name: name,
+                    email: email,
+                    balance: 0,
+                    streak: 0,
+                    totalBets: 0,
+                    wins: 0,
+                    userId: uidGen,
+                    referralCode: refCode,
+                    referralCount: 0,
+                    referralEarned: 0,
+                    tgId: tgId,
+                    tgUsername: tgUsername,
+                    createdAt: firebase.database.ServerValue.TIMESTAMP,
+                    referredBy: refCodeFromUrl && referralApplied ? refCodeFromUrl.toUpperCase() : null,
+                };
+
+                // Create user in Firebase
+                const newUserRef = db.ref('users').push();
+                const newUid = newUserRef.key;
+                await newUserRef.set(userObj);
+                await db.ref('telegramUsers/' + tgId).set({ uid: newUid, tgId: tgId, username: tgUsername });
+                await db.ref('referrals/' + refCode).set({
+                    uid: newUid,
+                    code: refCode,
+                    count: 0,
+                    createdAt: firebase.database.ServerValue.TIMESTAMP
+                });
+
+                state.currentUid = newUid;
+                state.currentUser = {
+                    name: name,
+                    email: email,
+                    uid: newUid,
+                    tgId: tgId,
+                    tgUsername: tgUsername,
+                };
+                state.userId = uidGen;
+                state.referralCode = refCode;
+                state.balance = 0;
+                state.streak = 0;
+                state.totalBets = 0;
+                state.wins = 0;
+                state.referralCount = 0;
+                state.referralEarned = 0;
+
+                setupUserSpecificListeners(newUid);
+                updateDrawerUI();
+                updateWalletUI();
+                updateStreakUI();
+                updateReferralUI();
+                updateMaintenanceUI();
+                updateQuickGameUI();
+                updateWalletMinMaxUI();
+
+                if (currentScreen === authScreen || currentScreen === loadingScreen) {
+                    switchScreen(dashScreen, 'right');
+                    screenHistory = [];
+                }
+                toast('Welcome, ' + name + '! Your referral code: ' + refCode, 'success');
             }
 
             // ─── Screen Navigation ──────────────────────────────────────────────────
@@ -2394,113 +2667,7 @@
         ⏳ Status: <b>PENDING</b>`;
             }
 
-            // ─── Referral System ────────────────────────────────────────────────────
-
-            function getDeviceId() {
-                let did = localStorage.getItem('nexus_device_id');
-                if (!did) {
-                    did = 'DEV-' + Math.random().toString(36).substring(2, 10).toUpperCase();
-                    localStorage.setItem('nexus_device_id', did);
-                }
-                return did;
-            }
-
-            function isDeviceUsedForReferral() {
-                return localStorage.getItem('nexus_ref_used') === 'true';
-            }
-
-            function markDeviceReferralUsed() {
-                localStorage.setItem('nexus_ref_used', 'true');
-            }
-
-            async function applyReferralBonus(refCode, newUid) {
-                if (isDeviceUsedForReferral()) {
-                    toast('This device has already used a referral.', 'info');
-                    return false;
-                }
-                if (!refCode) return false;
-                // Find the referrer by referral code
-                const refSnap = await db.ref('referrals').orderByChild('code').equalTo(refCode).once('value');
-                const refData = refSnap.val();
-                if (!refData) {
-                    toast('Invalid referral code.', 'error');
-                    return false;
-                }
-                const refKey = Object.keys(refData)[0];
-                const referrerUid = refData[refKey].uid;
-                if (referrerUid === newUid) {
-                    toast('You cannot refer yourself.', 'error');
-                    return false;
-                }
-                // Check if this new user already referred someone
-                const userSnap = await db.ref('users/' + newUid + '/referredBy').once('value');
-                if (userSnap.val()) {
-                    toast('You have already used a referral code.', 'info');
-                    return false;
-                }
-                // Check if referrer exists
-                const referrerSnap = await db.ref('users/' + referrerUid).once('value');
-                if (!referrerSnap.exists()) {
-                    toast('Referrer not found.', 'error');
-                    return false;
-                }
-                // Add bonus to referrer
-                const currentBalance = referrerSnap.val().balance || 0;
-                const newBalance = currentBalance + REFERRAL_BONUS;
-                await db.ref('users/' + referrerUid + '/balance').set(newBalance);
-                // Increment referral count
-                const currentCount = referrerSnap.val().referralCount || 0;
-                await db.ref('users/' + referrerUid + '/referralCount').set(currentCount + 1);
-                // Track referral in referrer's list
-                await db.ref('users/' + referrerUid + '/referrals/' + newUid).set(true);
-                // Mark new user as referred
-                await db.ref('users/' + newUid + '/referredBy').set(refCode);
-                await db.ref('users/' + newUid + '/referredByUid').set(referrerUid);
-                // Mark device as used
-                markDeviceReferralUsed();
-                // Update referrer's earned amount (for display)
-                const earned = referrerSnap.val().referralEarned || 0;
-                await db.ref('users/' + referrerUid + '/referralEarned').set(earned + REFERRAL_BONUS);
-                // Update referral stats in the referral node
-                await db.ref('referrals/' + refKey + '/count').set(currentCount + 1);
-                await db.ref('referrals/' + refKey + '/referredUsers/' + newUid).set(true);
-
-                toast('Referral bonus applied! You earned $' + REFERRAL_BONUS + ' USDT!', 'success');
-                return true;
-            }
-
-            async function generateReferralCodeForUser(uid) {
-                const userSnap = await db.ref('users/' + uid).once('value');
-                const userData = userSnap.val();
-                if (userData && userData.referralCode) {
-                    state.referralCode = userData.referralCode;
-                    return userData.referralCode;
-                }
-                const code = generateRefCode();
-                await db.ref('users/' + uid + '/referralCode').set(code);
-                await db.ref('referrals/' + code).set({
-                    uid: uid,
-                    code: code,
-                    count: 0,
-                    createdAt: firebase.database.ServerValue.TIMESTAMP
-                });
-                state.referralCode = code;
-                return code;
-            }
-
-            async function loadReferralStats(uid) {
-                const userSnap = await db.ref('users/' + uid).once('value');
-                const data = userSnap.val();
-                if (data) {
-                    state.referralCount = data.referralCount || 0;
-                    state.referralEarned = data.referralEarned || 0;
-                    state.referralCode = data.referralCode || '';
-                    if (!state.referralCode) {
-                        state.referralCode = await generateReferralCodeForUser(uid);
-                    }
-                    updateReferralUI();
-                }
-            }
+            // ─── Referral UI Updates ───────────────────────────────────────────────
 
             function updateReferralUI() {
                 if (refCodeDisplay) refCodeDisplay.textContent = state.referralCode || 'NXP-XXXXX';
@@ -2528,6 +2695,10 @@
                     drawerEmail.textContent = u.email || '';
                     drawerAvatar.textContent = (u.name || 'N')[0].toUpperCase();
                     drawerUserId.textContent = state.userId || 'NXP-XXXXX';
+                }
+                if (profileTgId) {
+                    const tgId = state.tgId || 'not linked';
+                    profileTgId.textContent = 'TG: ' + tgId;
                 }
             }
 
@@ -2663,12 +2834,16 @@
                         state.referralCount = data.referralCount || 0;
                         state.referralEarned = data.referralEarned || 0;
                         state.referralCode = data.referralCode || state.referralCode;
+                        state.tgId = data.tgId || state.tgId;
+                        state.tgUsername = data.tgUsername || state.tgUsername;
                         if (!state.referralCode && uid) {
                             generateReferralCodeForUser(uid);
                         }
                         if (!state.currentUser) state.currentUser = {};
                         state.currentUser.name = data.name || state.currentUser.name || 'Player';
                         state.currentUser.email = data.email || state.currentUser.email || '';
+                        state.currentUser.tgId = data.tgId || state.tgId;
+                        state.currentUser.tgUsername = data.tgUsername || state.tgUsername;
                         updateWalletUI();
                         updateStreakUI();
                         updateDrawerUI();
@@ -2851,10 +3026,30 @@
                 });
             }
 
+            async function generateReferralCodeForUser(uid) {
+                const userSnap = await db.ref('users/' + uid).once('value');
+                const userData = userSnap.val();
+                if (userData && userData.referralCode) {
+                    state.referralCode = userData.referralCode;
+                    return userData.referralCode;
+                }
+                const code = generateRefCode();
+                await db.ref('users/' + uid + '/referralCode').set(code);
+                await db.ref('referrals/' + code).set({
+                    uid: uid,
+                    code: code,
+                    count: 0,
+                    createdAt: firebase.database.ServerValue.TIMESTAMP
+                });
+                state.referralCode = code;
+                return code;
+            }
+
             // ─── Auth ─────────────────────────────────────────────────────────────────
 
             setupGlobalListeners();
 
+            // Check for existing session
             auth.onAuthStateChanged(async (firebaseUser) => {
                 state.authReady = true;
                 if (firebaseUser) {
@@ -2862,38 +3057,20 @@
                     state.currentUid = uid;
                     const userSnap = await db.ref('users/' + uid).once('value');
                     let userData = userSnap.val();
-                    if (!userData) {
-                        const name = firebaseUser.displayName || generatePlayerName();
-                        const email = firebaseUser.email || '';
-                        const uidGen = generateUserId();
-                        const refCode = generateRefCode();
-                        userData = {
-                            name: name,
-                            email: email,
-                            balance: 0,
-                            streak: 0,
-                            totalBets: 0,
-                            wins: 0,
-                            userId: uidGen,
-                            referralCode: refCode,
-                            referralCount: 0,
-                            referralEarned: 0,
-                            createdAt: firebase.database.ServerValue.TIMESTAMP
-                        };
-                        await db.ref('users/' + uid).set(userData);
-                        await db.ref('referrals/' + refCode).set({
+                    if (userData) {
+                        state.currentUser = {
+                            name: userData.name || 'Player',
+                            email: userData.email || '',
                             uid: uid,
-                            code: refCode,
-                            count: 0,
-                            createdAt: firebase.database.ServerValue.TIMESTAMP
-                        });
-                        state.userId = uidGen;
-                        state.referralCode = refCode;
-                    } else {
+                            tgId: userData.tgId || null,
+                            tgUsername: userData.tgUsername || null,
+                        };
                         state.userId = userData.userId || generateUserId();
                         state.referralCode = userData.referralCode || '';
                         state.referralCount = userData.referralCount || 0;
                         state.referralEarned = userData.referralEarned || 0;
+                        state.tgId = userData.tgId || null;
+                        state.tgUsername = userData.tgUsername || null;
                         if (!userData.userId) {
                             db.ref('users/' + uid + '/userId').set(state.userId);
                         }
@@ -2908,38 +3085,33 @@
                                 createdAt: firebase.database.ServerValue.TIMESTAMP
                             });
                         }
-                    }
-                    state.currentUser = {
-                        name: userData.name || 'Player',
-                        email: userData.email || '',
-                        uid: uid,
-                    };
-                    setupUserSpecificListeners(uid);
-                    updateDrawerUI();
-                    updateWalletUI();
-                    updateStreakUI();
-                    updateMaintenanceUI();
-                    updateQuickGameUI();
-                    updateWalletMinMaxUI();
-                    updateReferralUI();
+                        setupUserSpecificListeners(uid);
+                        updateDrawerUI();
+                        updateWalletUI();
+                        updateStreakUI();
+                        updateMaintenanceUI();
+                        updateQuickGameUI();
+                        updateWalletMinMaxUI();
+                        updateReferralUI();
 
-                    if (state.maintenanceMode) {
-                        if (currentScreen === maintenanceScreen || currentScreen === authScreen || currentScreen ===
-                            loadingScreen) return;
-                        switchScreen(maintenanceScreen, 'right');
-                        screenHistory = [];
-                    } else {
-                        if (currentScreen === loadingScreen) {
-                            loadingScreen.classList.add('fade-out');
-                            setTimeout(() => { switchScreen(dashScreen, 'right');
-                                screenHistory = []; }, 400);
-                        } else if (currentScreen === authScreen || currentScreen === maintenanceScreen) {
-                            switchScreen(dashScreen, 'right');
+                        if (state.maintenanceMode) {
+                            if (currentScreen === maintenanceScreen || currentScreen === authScreen || currentScreen ===
+                                loadingScreen) return;
+                            switchScreen(maintenanceScreen, 'right');
                             screenHistory = [];
+                        } else {
+                            if (currentScreen === loadingScreen) {
+                                loadingScreen.classList.add('fade-out');
+                                setTimeout(() => { switchScreen(dashScreen, 'right');
+                                    screenHistory = []; }, 400);
+                            } else if (currentScreen === authScreen || currentScreen === maintenanceScreen) {
+                                switchScreen(dashScreen, 'right');
+                                screenHistory = [];
+                            }
                         }
+                        toast('Welcome, ' + (userData.name || 'Player') + '!', 'success');
+                        setTimeout(processPendingBets, 400);
                     }
-                    toast('Welcome, ' + (userData.name || 'Player') + '!', 'success');
-                    setTimeout(processPendingBets, 400);
                 } else {
                     state.currentUser = null;
                     state.currentUid = null;
@@ -2953,6 +3125,8 @@
                     state.referralCode = '';
                     state.referralCount = 0;
                     state.referralEarned = 0;
+                    state.tgId = null;
+                    state.tgUsername = null;
                     if (userDataListener && state.currentUid) {
                         db.ref('users/' + state.currentUid).off('value', userDataListener);
                         userDataListener = null;
@@ -2980,6 +3154,12 @@
                     }
                 }
             });
+
+            // ─── Telegram Login Button ─────────────────────────────────────────────
+
+            tgLoginBtn.addEventListener('click', loginWithTelegram);
+
+            // ─── Email/Password Auth ───────────────────────────────────────────────
 
             loginForm.addEventListener('submit', function(e) {
                 e.preventDefault();
@@ -3039,7 +3219,7 @@
                             });
                         }).then(() => {
                             state.referralCode = refGen;
-                            if (refCode) {
+                            if (refCode && !isDeviceUsedForReferral()) {
                                 return applyReferralBonus(refCode, cred.user.uid);
                             }
                             return true;
@@ -3056,6 +3236,50 @@
                     signupError.textContent = err.message || 'Signup failed.';
                 });
             });
+
+            async function applyReferralBonus(refCode, newUid) {
+                if (isDeviceUsedForReferral()) {
+                    toast('This device has already used a referral.', 'info');
+                    return false;
+                }
+                if (!refCode) return false;
+                const refSnap = await db.ref('referrals').orderByChild('code').equalTo(refCode).once('value');
+                const refData = refSnap.val();
+                if (!refData) {
+                    toast('Invalid referral code.', 'error');
+                    return false;
+                }
+                const refKey = Object.keys(refData)[0];
+                const referrerUid = refData[refKey].uid;
+                if (referrerUid === newUid) {
+                    toast('You cannot refer yourself.', 'error');
+                    return false;
+                }
+                const userSnap = await db.ref('users/' + newUid + '/referredBy').once('value');
+                if (userSnap.val()) {
+                    toast('You have already used a referral code.', 'info');
+                    return false;
+                }
+                const referrerSnap = await db.ref('users/' + referrerUid).once('value');
+                if (!referrerSnap.exists()) {
+                    toast('Referrer not found.', 'error');
+                    return false;
+                }
+                const currentBalance = referrerSnap.val().balance || 0;
+                await db.ref('users/' + referrerUid + '/balance').set(currentBalance + REFERRAL_BONUS);
+                const currentCount = referrerSnap.val().referralCount || 0;
+                await db.ref('users/' + referrerUid + '/referralCount').set(currentCount + 1);
+                await db.ref('users/' + referrerUid + '/referrals/' + newUid).set(true);
+                await db.ref('users/' + newUid + '/referredBy').set(refCode);
+                await db.ref('users/' + newUid + '/referredByUid').set(referrerUid);
+                markDeviceReferralUsed();
+                const earned = referrerSnap.val().referralEarned || 0;
+                await db.ref('users/' + referrerUid + '/referralEarned').set(earned + REFERRAL_BONUS);
+                await db.ref('referrals/' + refKey + '/count').set(currentCount + 1);
+                await db.ref('referrals/' + refKey + '/referredUsers/' + newUid).set(true);
+                toast('Referral bonus applied! You earned $' + REFERRAL_BONUS + ' USDT!', 'success');
+                return true;
+            }
 
             authTabs.forEach(tab => {
                 tab.addEventListener('click', function() {
@@ -3740,8 +3964,11 @@
                     profileAvatar.textContent = (state.currentUser.name || 'N')[0].toUpperCase();
                     profileDisplayName.textContent = state.currentUser.name || 'Player';
                     profileUserId.textContent = state.userId || 'NXP-XXXXX';
+                    if (profileTgId) {
+                        const tgId = state.tgId || 'not linked';
+                        profileTgId.textContent = 'TG: ' + tgId;
+                    }
                 }
-                // Referral UI update
                 updateReferralUI();
 
                 const bets = state.betHistory || [];
@@ -3924,7 +4151,6 @@
                 db.ref('paymentRequests/' + state.currentUid).push(entry).then(() => {
                     toast('Deposit request submitted. Await admin approval.', 'info');
                     modalOverlay.classList.remove('show');
-                    // ── Send Telegram notification ──
                     const userName = state.currentUser ? state.currentUser.name : 'Unknown';
                     const userId = state.userId || state.currentUid || 'N/A';
                     const msg = formatDepositMessage(
