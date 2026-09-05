@@ -200,7 +200,7 @@
       margin-top: 10px;
     }
 
-    /* Auth Screen */
+    /* Auth Screen (Telegram only) */
     #auth-screen {
       background: var(--bg-light);
       justify-content: center;
@@ -215,9 +215,9 @@
       border-radius: 24px;
       padding: 36px 28px;
       box-shadow: var(--shadow-md);
+      text-align: center;
     }
     .auth-box .mini-logo {
-      text-align: center;
       margin-bottom: 20px;
       font-size: 28px;
       font-weight: 800;
@@ -226,115 +226,37 @@
       -webkit-text-fill-color: transparent;
       background-clip: text;
     }
-    .auth-tabs {
-      display: flex;
-      gap: 0;
-      margin-bottom: 24px;
-      border-radius: 12px;
-      overflow: hidden;
-      background: var(--bg-light);
-    }
-    .auth-tab {
-      flex: 1;
-      padding: 12px;
-      text-align: center;
-      font-weight: 600;
-      font-size: 14px;
-      color: var(--text-secondary);
-      cursor: pointer;
-      transition: var(--transition-smooth);
-      border: none;
-      background: transparent;
-    }
-    .auth-tab.active {
-      background: var(--red-gradient);
-      color: #fff;
-      box-shadow: var(--shadow-sm);
-    }
-    .auth-form {
-      display: none;
-      flex-direction: column;
-      gap: 16px;
-    }
-    .auth-form.show {
-      display: flex;
-    }
-    .auth-form input {
-      padding: 14px 16px;
-      border-radius: var(--radius-sm);
-      border: 1px solid #ddd;
-      background: #fafafa;
-      color: var(--text-primary);
-      font-size: 15px;
-      outline: none;
-      transition: border var(--transition-smooth);
-    }
-    .auth-form input:focus {
-      border-color: var(--primary-red);
-    }
-    .auth-form input::placeholder {
-      color: #aaa;
-    }
-    .auth-btn {
+    .auth-box .telegram-login-btn {
+      width: 100%;
       padding: 14px;
       border: none;
       border-radius: var(--radius-sm);
-      background: var(--red-gradient);
+      background: #0088cc;
       color: #fff;
       font-weight: 700;
       font-size: 16px;
       cursor: pointer;
-      transition: transform 0.2s, box-shadow 0.2s;
-      box-shadow: 0 4px 12px rgba(255, 0, 0, 0.3);
-    }
-    .auth-btn:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 8px 20px rgba(255, 0, 0, 0.4);
-    }
-    .auth-btn:active {
-      transform: scale(0.97);
-    }
-    .auth-btn:disabled {
-      opacity: 0.5;
-      pointer-events: none;
-    }
-    .auth-error {
-      color: var(--error-red);
-      font-size: 13px;
-      text-align: center;
-      min-height: 20px;
-    }
-    .auth-loading {
-      color: var(--primary-red);
-      font-size: 13px;
-      text-align: center;
-      min-height: 20px;
-    }
-    .auth-extra {
-      font-size: 13px;
-      color: var(--text-muted);
-      text-align: center;
-      margin-top: 4px;
-    }
-    .auth-extra a {
-      color: var(--primary-red);
-      cursor: pointer;
-      font-weight: 600;
-      text-decoration: underline;
-    }
-    .telegram-register-btn {
-      background: #0088cc;
       box-shadow: 0 4px 12px rgba(0, 136, 204, 0.3);
-      margin-top: 4px;
+      margin-top: 12px;
+      transition: transform 0.2s;
     }
-    .telegram-register-btn:hover {
+    .auth-box .telegram-login-btn:hover {
+      transform: translateY(-2px);
       box-shadow: 0 8px 20px rgba(0, 136, 204, 0.4);
     }
-    .referral-code-input {
-      display: none;
+    .auth-box .telegram-login-btn:active {
+      transform: scale(0.97);
     }
-    .referral-code-input.show {
-      display: block;
+    .auth-box .auth-error {
+      color: var(--error-red);
+      font-size: 13px;
+      min-height: 20px;
+      margin-top: 8px;
+    }
+    .auth-box .auth-info {
+      color: var(--text-muted);
+      font-size: 13px;
+      margin-top: 12px;
     }
 
     /* Dashboard Header */
@@ -1894,43 +1816,6 @@
         font-size: 10px;
       }
     }
-
-    /* Verify banner */
-    .verify-banner {
-      background: #fff3cd;
-      border: 1px solid #ffc107;
-      border-radius: var(--radius-sm);
-      padding: 12px 16px;
-      margin: 8px 16px;
-      display: none;
-      align-items: center;
-      justify-content: space-between;
-      flex-wrap: wrap;
-      gap: 8px;
-    }
-    .verify-banner.show {
-      display: flex;
-    }
-    .verify-banner .msg {
-      color: #856404;
-      font-weight: 600;
-      font-size: 13px;
-    }
-    .verify-banner .resend-btn {
-      background: #ffc107;
-      border: none;
-      padding: 6px 16px;
-      border-radius: 20px;
-      font-weight: 600;
-      color: #000;
-      cursor: pointer;
-      font-size: 12px;
-    }
-    .verify-banner .email-verified-msg {
-      color: var(--success-green);
-      font-weight: 600;
-      font-size: 13px;
-    }
   </style>
 </head>
 <body>
@@ -1952,7 +1837,7 @@
       <div style="font-size:12px;opacity:0.7;margin-top:2px;">USD</div>
     </div>
 
-    <div class="wallet-tabs">
+    <div class="wallet-tabs" id="walletTabs">
       <button class="wallet-tab active" data-wtab="deposit">💳 Deposit</button>
       <button class="wallet-tab" data-wtab="withdraw">💸 Withdraw</button>
       <button class="wallet-tab" data-wtab="history">📜 History</button>
@@ -1973,7 +1858,7 @@
       <p style="color:var(--text-muted);text-align:center;padding:12px 0;">Loading history...</p>
     </div>
 
-    <!-- Deposit Form (hidden, shown when method clicked) -->
+    <!-- Deposit Form -->
     <div class="wallet-form-container" id="walletDepositFormContainer">
       <div class="wallet-form-card" id="walletDepositForm">
         <h4>💳 Deposit via <span id="depositMethodName">—</span></h4>
@@ -2024,33 +1909,12 @@
     <div class="screen" id="auth-screen">
       <div class="auth-box">
         <div class="mini-logo">NexusPlay</div>
-        <div class="auth-tabs">
-          <button class="auth-tab active" data-tab="login">Sign In</button>
-          <button class="auth-tab" data-tab="signup">Sign Up</button>
+        <div style="font-size:14px;color:var(--text-secondary);margin-bottom:16px;">
+          🔹 Login or Register with Telegram
         </div>
-        <form class="auth-form show" id="loginForm" autocomplete="off">
-          <input type="email" id="loginEmail" placeholder="Email" required />
-          <input type="password" id="loginPass" placeholder="Password" required />
-          <button class="auth-btn" type="submit" id="loginBtn">Enter Nexus</button>
-          <div class="auth-error" id="loginError"></div>
-          <div class="auth-loading" id="loginLoading"></div>
-          <div class="auth-extra">
-            <a id="telegramLoginBtn">🔹 Login with Telegram</a>
-          </div>
-        </form>
-        <form class="auth-form" id="signupForm" autocomplete="off">
-          <input type="text" id="signupName" placeholder="Display Name (optional)" />
-          <input type="email" id="signupEmail" placeholder="Email" required />
-          <input type="password" id="signupPass" placeholder="Password (min 6)" required minlength="6" />
-          <div class="referral-code-input" id="referralCodeInput">
-            <input type="text" id="signupReferral" placeholder="Referral Code (optional)" />
-          </div>
-          <button class="auth-btn" type="submit" id="signupBtn">Create Account</button>
-          <button class="auth-btn telegram-register-btn" type="button" id="telegramRegisterBtn">📱 Register with Telegram</button>
-          <div class="auth-error" id="signupError"></div>
-          <div class="auth-loading" id="signupLoading"></div>
-          <div class="auth-extra">By signing up, you agree to our Terms & Conditions</div>
-        </form>
+        <button class="telegram-login-btn" id="telegramMainLoginBtn">📱 Login with Telegram</button>
+        <div class="auth-error" id="authError"></div>
+        <div class="auth-info">By using this app, you agree to our Terms & Conditions</div>
       </div>
     </div>
 
@@ -2071,10 +1935,6 @@
           <span class="coin">$</span>
           <span id="walletDisplay">0.00</span>
         </div>
-      </div>
-      <div class="verify-banner" id="verifyBanner">
-        <span class="msg">📧 Please verify your email address. Check your inbox (and spam folder).</span>
-        <button class="resend-btn" id="resendVerifyBtn">Resend</button>
       </div>
       <div class="filter-bar" id="filterBar">
         <button class="filter-btn active" data-category="all">All Live</button>
@@ -2121,15 +1981,15 @@
           <button data-choice="over">Over 7</button>
         </div>
         <div class="quick-amount-options" id="uoAmountOptions">
-          <button class="amt-btn active-amt" data-amount="15">$15</button>
-          <button class="amt-btn" data-amount="25">$25</button>
-          <button class="amt-btn" data-amount="50">$50</button>
-          <button class="amt-btn" data-amount="100">$100</button>
-          <button class="amt-btn" data-amount="200">$200</button>
-          <button class="amt-btn" data-amount="500">$500</button>
+          <button class="amt-btn active-amt" data-amount="0.15">$0.15</button>
+          <button class="amt-btn" data-amount="0.25">$0.25</button>
+          <button class="amt-btn" data-amount="0.50">$0.50</button>
+          <button class="amt-btn" data-amount="1.00">$1.00</button>
+          <button class="amt-btn" data-amount="2.00">$2.00</button>
+          <button class="amt-btn" data-amount="5.00">$5.00</button>
         </div>
         <div class="quick-bet-row">
-          <input type="number" id="uoAmount" value="15" min="15" placeholder="Amount" />
+          <input type="number" id="uoAmount" value="0.15" min="0.15" step="0.01" placeholder="Amount" />
           <button id="uoBetBtn">Bet</button>
         </div>
         <div class="quick-result" id="uoResult"></div>
@@ -2152,15 +2012,15 @@
           <button data-choice="tails">Tails</button>
         </div>
         <div class="quick-amount-options" id="htAmountOptions">
-          <button class="amt-btn active-amt" data-amount="15">$15</button>
-          <button class="amt-btn" data-amount="25">$25</button>
-          <button class="amt-btn" data-amount="50">$50</button>
-          <button class="amt-btn" data-amount="100">$100</button>
-          <button class="amt-btn" data-amount="200">$200</button>
-          <button class="amt-btn" data-amount="500">$500</button>
+          <button class="amt-btn active-amt" data-amount="0.15">$0.15</button>
+          <button class="amt-btn" data-amount="0.25">$0.25</button>
+          <button class="amt-btn" data-amount="0.50">$0.50</button>
+          <button class="amt-btn" data-amount="1.00">$1.00</button>
+          <button class="amt-btn" data-amount="2.00">$2.00</button>
+          <button class="amt-btn" data-amount="5.00">$5.00</button>
         </div>
         <div class="quick-bet-row">
-          <input type="number" id="htAmount" value="15" min="15" placeholder="Amount" />
+          <input type="number" id="htAmount" value="0.15" min="0.15" step="0.01" placeholder="Amount" />
           <button id="htBetBtn">Flip</button>
         </div>
         <div class="quick-result" id="htResult"></div>
@@ -2304,8 +2164,8 @@
     <div class="slip-body">
       <p id="slipSelection" style="color:var(--text-primary);font-size:15px;">Select a team</p>
       <p style="color:var(--text-muted);">Odds: <span id="slipOdds" style="color:var(--primary-red);font-weight:700;">0.00</span></p>
-      <label style="color:var(--text-muted);">Amount (Min $15)</label>
-      <input type="number" id="slipAmount" value="15" min="15" />
+      <label style="color:var(--text-muted);">Amount (Min $0.15)</label>
+      <input type="number" id="slipAmount" value="0.15" min="0.15" step="0.01" />
       <p style="color:var(--text-muted);">Potential Win: <span class="potential" id="slipPotential">$0.00</span></p>
       <button class="place-btn" id="placeSlipBet">Place Bet</button>
       <p id="slipError" style="color:var(--error-red);font-size:13px;min-height:20px;"></p>
@@ -2362,7 +2222,7 @@
           headTails: { enabled: true, winPercentage: 50, forceWin: false }
         },
         supportInfo: { phone: '', email: '', messenger: '', info: '', telegramLink: '', whatsappLink: '' },
-        appSettings: { minDeposit: 10, minWithdraw: 10, maxWithdraw: 50000, minBet: 15 },
+        appSettings: { minDeposit: 10, minWithdraw: 10, maxWithdraw: 50000, minBet: 0.15 },
         maintenanceMode: false,
         maintenanceMessage: 'Under Maintenance',
         selectedCategory: 'all',
@@ -2421,8 +2281,6 @@
       const filterBar = $('#filterBar');
       const gameContainer = $('#gameCardsContainer');
       const feedTitle = $('#feedTitle');
-      const verifyBanner = $('#verifyBanner');
-      const resendVerifyBtn = $('#resendVerifyBtn');
 
       const slipOverlay = $('#slipOverlay');
       const bettingSlip = $('#bettingSlip');
@@ -2457,19 +2315,8 @@
       const htDisabledMsg = $('#htDisabledMsg');
       const htAmountOptions = $('#htAmountOptions');
 
-      const loginForm = $('#loginForm');
-      const signupForm = $('#signupForm');
-      const loginError = $('#loginError');
-      const signupError = $('#signupError');
-      const loginLoading = $('#loginLoading');
-      const signupLoading = $('#signupLoading');
-      const loginBtn = $('#loginBtn');
-      const signupBtn = $('#signupBtn');
-      const authTabs = $$('.auth-tab');
-      const telegramLoginBtn = $('#telegramLoginBtn');
-      const telegramRegisterBtn = $('#telegramRegisterBtn');
-      const signupReferral = $('#signupReferral');
-      const referralCodeInput = $('#referralCodeInput');
+      const loginError = $('#authError');
+      const telegramMainLoginBtn = $('#telegramMainLoginBtn');
 
       const paymentHistoryList = $('#paymentHistoryList');
       const historyBackBtn = $('#historyBackBtn');
@@ -2533,7 +2380,7 @@
       const withdrawFormSuccess = $('#withdrawFormSuccess');
       const closeWithdrawFormBtn = $('#closeWithdrawFormBtn');
 
-      const walletTabs = $$('.wallet-tab');
+      const walletTabsContainer = $('#walletTabs');
 
       // ===== UTILITY =====
       function randomId() { return Math.random().toString(36).substring(2, 9); }
@@ -2647,24 +2494,6 @@
         return { text: 'Pending', cls: 'pending' };
       }
 
-      // ===== EMAIL VERIFICATION CHECK =====
-      function isUserVerified() {
-        // If user has telegramId, they are considered verified
-        if (state.telegramId) return true;
-        // Otherwise check emailVerified flag
-        return state.emailVerified === true;
-      }
-
-      function checkVerificationAndWarn(action) {
-        if (!isUserVerified()) {
-          toast('Please verify your email first. Check your inbox (and spam folder).', 'error', 5000);
-          // Show verify banner if not shown
-          verifyBanner.classList.add('show');
-          return false;
-        }
-        return true;
-      }
-
       // ===== TELEGRAM BOT API =====
       async function sendTelegramMessage(chatId, text, replyMarkup = null) {
         try {
@@ -2706,7 +2535,10 @@
             deposit: data && data.deposit ? Object.keys(data.deposit).map(k => ({ id: k, ...data.deposit[k] })) : [],
             withdraw: data && data.withdraw ? Object.keys(data.withdraw).map(k => ({ id: k, ...data.withdraw[k] })) : []
           };
-          if (currentScreen === walletScreen) renderWalletMethods();
+          // Re-render wallet methods if wallet screen is active
+          if (currentScreen === walletScreen) {
+            renderWalletMethods();
+          }
         });
 
         if (quickGameSettingsListener) db.ref('quickGameSettings').off('value', quickGameSettingsListener);
@@ -2734,7 +2566,7 @@
         appSettingsListener = db.ref('settings').on('value', (snap) => {
           const data = snap.val();
           if (data) state.appSettings = { ...state.appSettings, ...data };
-          if (!data || data.minBet === undefined) state.appSettings.minBet = 15;
+          if (!data || data.minBet === undefined) state.appSettings.minBet = 0.15;
           updateWalletMinMaxUI();
         });
 
@@ -2806,26 +2638,8 @@
             updateStreakUI();
             updateDrawerUI();
             renderGames();
-            updateVerifyBanner();
           }
         });
-      }
-
-      function updateVerifyBanner() {
-        const user = auth.currentUser;
-        if (user && !user.emailVerified && state.currentUid && !state.telegramId) {
-          verifyBanner.classList.add('show');
-          state.emailVerified = false;
-        } else {
-          verifyBanner.classList.remove('show');
-          // If telegramId exists, consider verified
-          if (state.telegramId) state.emailVerified = true;
-          else if (user) state.emailVerified = user.emailVerified;
-        }
-        // Update Firebase emailVerified
-        if (state.currentUid && user) {
-          db.ref('users/' + state.currentUid + '/emailVerified').set(user.emailVerified);
-        }
       }
 
       function checkAndUpdateGameStatuses() {
@@ -2921,14 +2735,15 @@
         const minDep = s.minDeposit || 10;
         const minWit = s.minWithdraw || 10;
         const maxWit = s.maxWithdraw || 50000;
+        const minBet = s.minBet || 0.15;
         if (depositMinMaxInfo) depositMinMaxInfo.textContent = `Min: $${minDep.toFixed(2)}`;
         if (withdrawMinMaxInfo) withdrawMinMaxInfo.textContent =
           `Min: $${minWit.toFixed(2)} | Max: $${maxWit.toFixed(2)}`;
         if (depositAmountInput) depositAmountInput.min = minDep;
         if (withdrawAmountInput) withdrawAmountInput.min = minWit;
-        if (slipAmount) slipAmount.min = state.appSettings.minBet || 15;
-        if (uoAmount) uoAmount.min = state.appSettings.minBet || 15;
-        if (htAmount) htAmount.min = state.appSettings.minBet || 15;
+        if (slipAmount) slipAmount.min = minBet;
+        if (uoAmount) uoAmount.min = minBet;
+        if (htAmount) htAmount.min = minBet;
       }
 
       async function processPendingBets() {
@@ -2990,7 +2805,89 @@
         });
       }
 
-      // ===== AUTH =====
+      // ===== TELEGRAM AUTO-REGISTRATION =====
+      function handleTelegramUser(tgUser) {
+        if (!tgUser) return;
+        const tgId = tgUser.id.toString();
+        const tgName = tgUser.first_name + (tgUser.last_name ? ' ' + tgUser.last_name : '');
+        const tgUsername = tgUser.username || '';
+
+        // Check if user exists with this telegramId
+        db.ref('users').orderByChild('telegramId').equalTo(tgId).once('value').then((snap) => {
+          if (snap.exists()) {
+            // Existing user - sign in with stored password or email
+            const userData = Object.values(snap.val())[0];
+            if (userData.email && userData.password) {
+              auth.signInWithEmailAndPassword(userData.email, userData.password).then(() => {
+                toast('Welcome back, ' + userData.name + '!', 'success');
+                state.telegramId = tgId;
+              }).catch((err) => {
+                loginError.textContent = 'Auto-login failed: ' + err.message;
+                toast('Auto-login failed. Please try again.', 'error');
+              });
+            } else {
+              // No password stored - try to send password reset or create new
+              loginError.textContent = 'Account exists but no password. Please contact support.';
+              toast('Account issue. Please contact support.', 'error');
+            }
+          } else {
+            // New user - auto-register
+            const email = tgUsername ? tgUsername + '@telegram.nexus' : 'tg_' + tgId + '@nexus.com';
+            const password = Math.random().toString(36).substring(2, 10) + 'Tg!';
+            const name = tgName || 'TelegramUser';
+            const uidGen = generateUserId();
+
+            auth.createUserWithEmailAndPassword(email, password).then((cred) => {
+              return cred.user.updateProfile({ displayName: name }).then(() => {
+                return db.ref('users/' + cred.user.uid).set({
+                  name: name,
+                  email: email,
+                  balance: 0,
+                  streak: 0,
+                  totalBets: 0,
+                  wins: 0,
+                  userId: uidGen,
+                  emailVerified: true, // Telegram users are trusted
+                  telegramId: tgId,
+                  telegramName: tgName,
+                  password: password,
+                  createdAt: firebase.database.ServerValue.TIMESTAMP,
+                });
+              });
+            }).then(() => {
+              toast('Telegram account registered!', 'success');
+              state.userId = uidGen;
+              state.telegramId = tgId;
+            }).catch((err) => {
+              loginError.textContent = 'Registration error: ' + err.message;
+              toast('Registration failed: ' + err.message, 'error');
+            });
+          }
+        }).catch((err) => {
+          loginError.textContent = 'Error: ' + err.message;
+          toast('Error: ' + err.message, 'error');
+        });
+      }
+
+      // ===== INIT TELEGRAM WEBAPP =====
+      function initTelegramApp() {
+        if (window.Telegram && window.Telegram.WebApp) {
+          const tg = window.Telegram.WebApp;
+          tg.expand();
+          const user = tg.initDataUnsafe?.user;
+          if (user) {
+            handleTelegramUser(user);
+          } else {
+            // No user data, show login button
+            loginError.textContent = 'Please open via Telegram or login manually.';
+          }
+        } else {
+          // Not in Telegram environment
+          loginError.textContent = 'Please open this app via Telegram.';
+        }
+      }
+
+      // ===== AUTH STATE LISTENER =====
       setupGlobalListeners();
 
       auth.onAuthStateChanged(async (firebaseUser) => {
@@ -3003,6 +2900,7 @@
           const userSnap = await db.ref('users/' + uid).once('value');
           let userData = userSnap.val();
           if (!userData) {
+            // Fallback: create user data if not exists (should not happen)
             const name = firebaseUser.displayName || generatePlayerName();
             const email = firebaseUser.email || '';
             const uidGen = generateUserId();
@@ -3042,7 +2940,6 @@
           updateMaintenanceUI();
           updateQuickGameUI();
           updateWalletMinMaxUI();
-          updateVerifyBanner();
 
           if (state.maintenanceMode) {
             if (currentScreen === maintenanceScreen || currentScreen === authScreen || currentScreen ===
@@ -3089,7 +2986,6 @@
           updateDrawerUI();
           updateWalletUI();
           updateStreakUI();
-          updateVerifyBanner();
           screenHistory = [];
           if (currentScreen === loadingScreen) {
             loadingScreen.classList.add('fade-out');
@@ -3102,228 +2998,45 @@
         }
       });
 
-      // ===== LOGIN / SIGNUP =====
-      loginForm.addEventListener('submit', function(e) {
-        e.preventDefault();
-        const email = $('#loginEmail').value.trim();
-        const pass = $('#loginPass').value.trim();
-        loginError.textContent = '';
-        loginLoading.textContent = '';
-        if (!email || !pass) { loginError.textContent = 'Fill all fields.'; return; }
-        loginBtn.disabled = true;
-        loginLoading.textContent = 'Signing in...';
-        auth.signInWithEmailAndPassword(email, pass).then(() => {
-          loginLoading.textContent = '';
-          loginBtn.disabled = false;
-          if (!auth.currentUser?.emailVerified && !state.telegramId) {
-            toast('Please verify your email first. Check spam folder.', 'info', 4000);
-          }
-        }).catch((err) => {
-          loginLoading.textContent = '';
-          loginBtn.disabled = false;
-          loginError.textContent = err.message || 'Login failed.';
-        });
-      });
-
-      signupForm.addEventListener('submit', function(e) {
-        e.preventDefault();
-        let name = $('#signupName').value.trim();
-        const email = $('#signupEmail').value.trim();
-        const pass = $('#signupPass').value.trim();
-        const referral = $('#signupReferral').value.trim();
-        signupError.textContent = '';
-        signupLoading.textContent = '';
-        if (!email || !pass) { signupError.textContent = 'Fill email & password.'; return; }
-        if (pass.length < 6) { signupError.textContent = 'Password min 6 characters.'; return; }
-        if (!name) name = generatePlayerName();
-        const uidGen = generateUserId();
-        signupBtn.disabled = true;
-        signupLoading.textContent = 'Creating account...';
-        auth.createUserWithEmailAndPassword(email, pass).then((cred) => {
-          return cred.user.sendEmailVerification().then(() => {
-            return cred.user.updateProfile({ displayName: name }).then(() => {
-              return db.ref('users/' + cred.user.uid).set({
-                name: name,
-                email: email,
-                balance: 0,
-                streak: 0,
-                totalBets: 0,
-                wins: 0,
-                userId: uidGen,
-                emailVerified: false,
-                referralCode: referral || null,
-                password: pass,
-                createdAt: firebase.database.ServerValue.TIMESTAMP,
-              });
-            });
-          });
-        }).then(() => {
-          signupLoading.textContent = '';
-          signupBtn.disabled = false;
-          state.userId = uidGen;
-          toast('Account created! Please verify your email. Check spam folder.', 'info', 5000);
-        }).catch((err) => {
-          signupLoading.textContent = '';
-          signupBtn.disabled = false;
-          signupError.textContent = err.message || 'Signup failed.';
-        });
-      });
-
-      // Resend verification
-      resendVerifyBtn.addEventListener('click', function() {
-        if (auth.currentUser) {
-          auth.currentUser.sendEmailVerification().then(() => {
-            toast('Verification email resent. Check spam folder.', 'info');
-          }).catch(() => {
-            toast('Failed to resend. Try again later.', 'error');
-          });
-        }
-      });
-
-      // ===== TELEGRAM LOGIN / REGISTER =====
-      function initTelegramAuth() {
-        if (window.Telegram && window.Telegram.WebApp) {
-          const tg = window.Telegram.WebApp;
-          const user = tg.initDataUnsafe?.user;
-          if (user) {
-            const tgId = user.id.toString();
-            const tgName = user.first_name + (user.last_name ? ' ' + user.last_name : '');
-            const tgUsername = user.username || '';
-            // Check if user exists in Firebase
-            db.ref('users').orderByChild('telegramId').equalTo(tgId).once('value').then((snap) => {
-              if (snap.exists()) {
-                // Login existing user
-                const userData = Object.values(snap.val())[0];
-                if (userData.email) {
-                  if (userData.password) {
-                    auth.signInWithEmailAndPassword(userData.email, userData.password).then(() => {
-                      toast('Welcome back, ' + userData.name + '!', 'success');
-                      state.telegramId = tgId;
-                    }).catch(() => {
-                      toast('Auto-login failed. Please use email login.', 'error');
-                    });
-                  } else {
-                    toast('Please login with email.', 'info');
-                  }
-                } else {
-                  toast('Please login with email.', 'info');
-                }
-              } else {
-                // New Telegram user - show signup with referral
-                toast('New Telegram user! Please complete registration.', 'info');
-                authTabs.forEach(t => t.classList.remove('active'));
-                document.querySelector('.auth-tab[data-tab="signup"]').classList.add('active');
-                document.querySelectorAll('.auth-form').forEach(f => f.classList.remove('show'));
-                signupForm.classList.add('show');
-                referralCodeInput.classList.add('show');
-                $('#signupName').value = tgName;
-                $('#signupEmail').value = tgUsername ? tgUsername + '@telegram.nexus' : 'tg_' + tgId + '@nexus.com';
-                const genPass = Math.random().toString(36).substring(2, 10) + 'Tg!';
-                $('#signupPass').value = genPass;
-                signupError.textContent = '📱 Telegram detected! Enter a referral code if you have one, then sign up.';
-                state._tgId = tgId;
-                state._tgName = tgName;
-                if (!document.getElementById('signupTgId')) {
-                  const tgInput = document.createElement('input');
-                  tgInput.type = 'hidden';
-                  tgInput.id = 'signupTgId';
-                  tgInput.value = tgId;
-                  signupForm.appendChild(tgInput);
-                }
-                // Override signup to save telegramId and set emailVerified true
-                const origSignup = signupForm.onsubmit;
-                signupForm.onsubmit = function(e) {
-                  e.preventDefault();
-                  const email = $('#signupEmail').value.trim();
-                  const pass = $('#signupPass').value.trim();
-                  const name = $('#signupName').value.trim() || tgName;
-                  const referral = $('#signupReferral').value.trim();
-                  const tgIdInput = document.getElementById('signupTgId');
-                  const tgId = tgIdInput ? tgIdInput.value : state._tgId;
-                  if (!email || !pass) { signupError.textContent = 'Fill all fields.'; return; }
-                  signupBtn.disabled = true;
-                  signupLoading.textContent = 'Creating account...';
-                  auth.createUserWithEmailAndPassword(email, pass).then((cred) => {
-                    return cred.user.updateProfile({ displayName: name }).then(() => {
-                      return db.ref('users/' + cred.user.uid).set({
-                        name: name,
-                        email: email,
-                        balance: 0,
-                        streak: 0,
-                        totalBets: 0,
-                        wins: 0,
-                        userId: generateUserId(),
-                        emailVerified: true, // Telegram users are verified
-                        telegramId: tgId,
-                        telegramName: tgName,
-                        referralCode: referral || null,
-                        password: pass,
-                        createdAt: firebase.database.ServerValue.TIMESTAMP,
-                      });
-                    });
-                  }).then(() => {
-                    signupLoading.textContent = '';
-                    signupBtn.disabled = false;
-                    toast('Telegram account registered!', 'success');
-                  }).catch((err) => {
-                    signupLoading.textContent = '';
-                    signupBtn.disabled = false;
-                    signupError.textContent = err.message || 'Signup failed.';
-                  });
-                };
-              }
-            }).catch(() => {});
-          }
-        }
-      }
-
-      telegramLoginBtn.addEventListener('click', function() {
+      // ===== LOGIN BUTTON =====
+      telegramMainLoginBtn.addEventListener('click', function() {
         if (window.Telegram && window.Telegram.WebApp) {
           window.Telegram.WebApp.openTelegramLink(BOT_LINK);
+          // After opening bot, the user will come back and we'll auto-login via initTelegramApp
+          // But we also need to re-trigger the check
+          setTimeout(() => {
+            if (!state.currentUid) {
+              initTelegramApp();
+            }
+          }, 3000);
         } else {
           window.open(BOT_LINK, '_blank');
         }
-        toast('Open the bot and click Start, then come back.', 'info', 5000);
+        toast('Please open the bot and click Start, then return.', 'info', 5000);
       });
 
-      telegramRegisterBtn.addEventListener('click', function() {
-        if (window.Telegram && window.Telegram.WebApp) {
-          window.Telegram.WebApp.openTelegramLink(BOT_LINK);
-        } else {
-          window.open(BOT_LINK, '_blank');
-        }
-        toast('Open the bot and click Start, then return to register.', 'info', 5000);
-      });
-
-      // Check Telegram WebApp on load
+      // ===== INIT ON LOAD =====
+      // Check if Telegram WebApp is available
       if (window.Telegram && window.Telegram.WebApp) {
         try {
           const tg = window.Telegram.WebApp;
           tg.expand();
           if (tg.initDataUnsafe?.user) {
-            setTimeout(initTelegramAuth, 1000);
-          }
-        } catch (e) {}
-      }
-
-      // ===== AUTH TABS =====
-      authTabs.forEach(tab => {
-        tab.addEventListener('click', function() {
-          authTabs.forEach(t => t.classList.remove('active'));
-          this.classList.add('active');
-          const target = this.dataset.tab;
-          document.querySelectorAll('.auth-form').forEach(f => f.classList.remove('show'));
-          if (target === 'login') {
-            loginForm.classList.add('show');
-            referralCodeInput.classList.remove('show');
+            // If we already have user, handle it after auth listener is set
+            setTimeout(() => {
+              if (!state.currentUid) {
+                handleTelegramUser(tg.initDataUnsafe.user);
+              }
+            }, 1000);
           } else {
-            signupForm.classList.add('show');
-            referralCodeInput.classList.remove('show');
+            loginError.textContent = 'Please open via Telegram or tap the login button.';
           }
-          loginError.textContent = '';
-          signupError.textContent = '';
-        });
-      });
+        } catch (e) {
+          console.error('Telegram init error:', e);
+        }
+      } else {
+        loginError.textContent = 'Please open this app via Telegram.';
+      }
 
       // ===== RENDER GAMES =====
       function renderGames() {
@@ -3447,13 +3160,6 @@
               toast('Betting is closed for this match.', 'info');
               return;
             }
-            // Check email verification before allowing bet selection
-            if (!checkVerificationAndWarn()) {
-              // Remove any selected state
-              const siblings = this.parentElement.querySelectorAll('.odd-btn');
-              siblings.forEach(s => s.classList.remove('selected'));
-              return;
-            }
             const siblings = this.parentElement.querySelectorAll('.odd-btn');
             siblings.forEach(s => s.classList.remove('selected'));
             this.classList.add('selected');
@@ -3516,7 +3222,7 @@
         selectedBet = bet;
         slipSelection.textContent = bet.label;
         slipOdds.textContent = bet.odds.toFixed(2);
-        slipAmount.value = Math.max(state.appSettings.minBet || 15, 15);
+        slipAmount.value = Math.max(state.appSettings.minBet || 0.15, 0.15);
         slipError.textContent = '';
         calculatePotential();
         bettingSlip.classList.add('open');
@@ -3542,14 +3248,9 @@
       placeSlipBet.addEventListener('click', async function() {
         if (!state.currentUid) { slipError.textContent = 'Please sign in first.'; return; }
         if (!selectedBet) { slipError.textContent = 'No bet selected.'; return; }
-        // Check verification
-        if (!checkVerificationAndWarn()) {
-          slipError.textContent = 'Please verify your email to place bets.';
-          return;
-        }
         const amount = parseFloat(slipAmount.value);
-        const minBet = state.appSettings.minBet || 15;
-        if (!amount || amount < minBet) { slipError.textContent = 'Minimum bet is $' + minBet + '.'; return; }
+        const minBet = state.appSettings.minBet || 0.15;
+        if (!amount || amount < minBet) { slipError.textContent = 'Minimum bet is $' + minBet.toFixed(2) + '.'; return; }
         if (amount > state.balance) { slipError.textContent = 'Insufficient balance!'; return; }
         const game = state.games.find(g => g.id === selectedBet.gameId);
         if (game && (game.status === 'live' || game.status === 'closed')) {
@@ -3617,7 +3318,7 @@
         container.addEventListener('click', function(e) {
           const btn = e.target.closest('.amt-btn');
           if (!btn) return;
-          const amt = parseInt(btn.dataset.amount, 10);
+          const amt = parseFloat(btn.dataset.amount);
           if (!isNaN(amt)) {
             input.value = amt;
             container.querySelectorAll('.amt-btn').forEach(b => b.classList.remove('active-amt'));
@@ -3625,12 +3326,20 @@
           }
         });
         input.addEventListener('input', function() {
-          const val = parseInt(input.value, 10);
+          const val = parseFloat(input.value);
           container.querySelectorAll('.amt-btn').forEach(b => {
-            const bAmt = parseInt(b.dataset.amount, 10);
-            b.classList.toggle('active-amt', bAmt === val);
+            const bAmt = parseFloat(b.dataset.amount);
+            b.classList.toggle('active-amt', Math.abs(bAmt - val) < 0.001);
           });
         });
+        // Set initial active
+        const initialVal = parseFloat(input.value);
+        if (!isNaN(initialVal)) {
+          container.querySelectorAll('.amt-btn').forEach(b => {
+            const bAmt = parseFloat(b.dataset.amount);
+            b.classList.toggle('active-amt', Math.abs(bAmt - initialVal) < 0.001);
+          });
+        }
       }
 
       setupQuickAmountButtons('uoAmountOptions', 'uoAmount');
@@ -3677,13 +3386,11 @@
       uoBetBtn.addEventListener('click', function() {
         if (!state.currentUid) { toast('Please sign in first.', 'error'); return; }
         if (state.isAnimating) return;
-        // Check verification
-        if (!checkVerificationAndWarn()) { return; }
         const qs = state.quickGameSettings.underOver7;
         if (!qs || !qs.enabled) { toast('Under/Over 7 is disabled.', 'error'); return; }
-        const amount = parseInt(uoAmount.value, 10);
-        const minBet = state.appSettings.minBet || 15;
-        if (!amount || amount < minBet) { toast('Minimum bet is $' + minBet + '.', 'error'); return; }
+        const amount = parseFloat(uoAmount.value);
+        const minBet = state.appSettings.minBet || 0.15;
+        if (!amount || amount < minBet) { toast('Minimum bet is $' + minBet.toFixed(2) + '.', 'error'); return; }
         if (amount > state.balance) { toast('Insufficient balance!', 'error'); return; }
 
         state.isAnimating = true;
@@ -3785,12 +3492,11 @@
       htBetBtn.addEventListener('click', function() {
         if (!state.currentUid) { toast('Please sign in first.', 'error'); return; }
         if (state.isAnimating) return;
-        if (!checkVerificationAndWarn()) { return; }
         const qs = state.quickGameSettings.headTails;
         if (!qs || !qs.enabled) { toast('Coin Flip is disabled.', 'error'); return; }
-        const amount = parseInt(htAmount.value, 10);
-        const minBet = state.appSettings.minBet || 15;
-        if (!amount || amount < minBet) { toast('Minimum bet is $' + minBet + '.', 'error'); return; }
+        const amount = parseFloat(htAmount.value);
+        const minBet = state.appSettings.minBet || 0.15;
+        if (!amount || amount < minBet) { toast('Minimum bet is $' + minBet.toFixed(2) + '.', 'error'); return; }
         if (amount > state.balance) { toast('Insufficient balance!', 'error'); return; }
 
         state.isAnimating = true;
@@ -3887,12 +3593,7 @@
             return;
           }
           if (action === 'wallet') {
-            if (!checkVerificationAndWarn()) {
-              // Allow viewing wallet but warn
-              openWalletPage();
-            } else {
-              openWalletPage();
-            }
+            openWalletPage();
           } else if (action === 'home') {
             state.selectedCategory = 'all';
             document.querySelectorAll('#filterBar .filter-btn').forEach(b => b.classList.remove('active'));
@@ -3908,7 +3609,6 @@
             renderGames();
             navigateTo(dashScreen, 'right');
           } else if (action === 'quickgame') {
-            if (!checkVerificationAndWarn()) return;
             switchQuickGame(state.activeQuickGame || 'uo');
             navigateTo(quickgameScreen, 'right');
           } else if (action === 'history') {
@@ -3958,9 +3658,6 @@
             if (state.maintenanceMode && targetId !== 'dash-screen') {
               toast('App is under maintenance.', 'info');
               return;
-            }
-            if (targetId === 'quickgame-screen' || targetId === 'dash-screen') {
-              if (!checkVerificationAndWarn()) return;
             }
             if (filter === 'live') {
               state.selectedCategory = 'live';
@@ -4104,6 +3801,7 @@
       function openWalletPage() {
         if (!state.currentUid) { toast('Please sign in first.', 'error'); return; }
         updateWalletUI();
+        // Ensure wallet methods are rendered
         renderWalletMethods();
         renderWalletHistory();
         // Show deposit tab by default
@@ -4114,36 +3812,54 @@
       walletBackBtn.addEventListener('click', () => goBack());
       walletPill.addEventListener('click', openWalletPage);
 
+      // ===== WALLET TAB SWITCHING (Event Delegation) =====
+      walletTabsContainer.addEventListener('click', function(e) {
+        const tab = e.target.closest('.wallet-tab');
+        if (!tab) return;
+        const wtab = tab.dataset.wtab;
+        if (!wtab) return;
+        switchWalletTab(wtab);
+      });
+
       function switchWalletTab(tab) {
-        walletTabs.forEach(t => t.classList.toggle('active', t.dataset.wtab === tab));
+        walletTabsContainer.querySelectorAll('.wallet-tab').forEach(t => t.classList.toggle('active', t.dataset.wtab ===
+          tab));
+        // Hide all method containers and forms
+        walletDepositMethods.style.display = 'none';
+        walletWithdrawMethods.style.display = 'none';
+        walletHistoryList.style.display = 'none';
+        walletDepositFormContainer.style.display = 'none';
+        walletWithdrawFormContainer.style.display = 'none';
+        walletDepositForm.classList.remove('show');
+        walletWithdrawForm.classList.remove('show');
+
         if (tab === 'deposit') {
           walletDepositMethods.style.display = '';
-          walletWithdrawMethods.style.display = 'none';
-          walletHistoryList.style.display = 'none';
-          walletDepositFormContainer.style.display = 'none';
-          walletWithdrawFormContainer.style.display = 'none';
-          renderWalletMethods();
+          renderWalletMethods(); // ensure methods are rendered
         } else if (tab === 'withdraw') {
-          walletDepositMethods.style.display = 'none';
           walletWithdrawMethods.style.display = '';
-          walletHistoryList.style.display = 'none';
-          walletDepositFormContainer.style.display = 'none';
-          walletWithdrawFormContainer.style.display = 'none';
           renderWalletMethods();
         } else {
-          walletDepositMethods.style.display = 'none';
-          walletWithdrawMethods.style.display = 'none';
           walletHistoryList.style.display = '';
-          walletDepositFormContainer.style.display = 'none';
-          walletWithdrawFormContainer.style.display = 'none';
           renderWalletHistory();
         }
       }
 
-      walletTabs.forEach(tab => {
-        tab.addEventListener('click', function() {
-          switchWalletTab(this.dataset.wtab);
-        });
+      // ===== WALLET METHOD CLICK (Event Delegation) =====
+      walletDepositMethods.addEventListener('click', function(e) {
+        const card = e.target.closest('.method-card');
+        if (!card) return;
+        const methodId = card.dataset.methodId;
+        const method = state.paymentMethods.deposit.find(m => m.id === methodId);
+        if (method) showDepositForm(method);
+      });
+
+      walletWithdrawMethods.addEventListener('click', function(e) {
+        const card = e.target.closest('.method-card');
+        if (!card) return;
+        const methodId = card.dataset.methodId;
+        const method = state.paymentMethods.withdraw.find(m => m.id === methodId);
+        if (method) showWithdrawForm(method);
       });
 
       function renderWalletMethods() {
@@ -4155,61 +3871,47 @@
           if (methods.length === 0) {
             walletDepositMethods.innerHTML =
               '<p style="color:var(--text-muted);text-align:center;padding:12px 0;">No deposit methods available.</p>';
-          } else {
-            let html = '';
-            methods.forEach(m => {
-              const imgTag = m.imgUrl ? `<img class="method-img" src="${m.imgUrl}" alt="${m.name}" />` :
-                `<div class="method-img" style="background:var(--red-gradient);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:18px;">${m.name[0]}</div>`;
-              html += `
-                    <div class="method-card" data-method-id="${m.id}" data-method-type="deposit">
-                      <div class="method-left">
-                        ${imgTag}
-                        <div>
-                          <div class="method-name">${m.name}</div>
-                          <div class="method-desc">${m.description || 'Deposit via ' + m.name}</div>
-                        </div>
-                      </div>
-                      <div class="method-arrow">›</div>
-                    </div>`;
-            });
-            walletDepositMethods.innerHTML = html;
-            walletDepositMethods.querySelectorAll('.method-card').forEach(card => {
-              card.addEventListener('click', function() {
-                const methodId = this.dataset.methodId;
-                const method = state.paymentMethods.deposit.find(m => m.id === methodId);
-                if (method) showDepositForm(method);
-              });
-            });
+            return;
           }
+          let html = '';
+          methods.forEach(m => {
+            const imgTag = m.imgUrl ? `<img class="method-img" src="${m.imgUrl}" alt="${m.name}" />` :
+              `<div class="method-img" style="background:var(--red-gradient);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:18px;">${m.name[0]}</div>`;
+            html += `
+                  <div class="method-card" data-method-id="${m.id}" data-method-type="deposit">
+                    <div class="method-left">
+                      ${imgTag}
+                      <div>
+                        <div class="method-name">${m.name}</div>
+                        <div class="method-desc">${m.description || 'Deposit via ' + m.name}</div>
+                      </div>
+                    </div>
+                    <div class="method-arrow">›</div>
+                  </div>`;
+          });
+          walletDepositMethods.innerHTML = html;
         } else if (tab === 'withdraw') {
           const methods = state.paymentMethods.withdraw || [];
           if (methods.length === 0) {
             walletWithdrawMethods.innerHTML =
               '<p style="color:var(--text-muted);text-align:center;padding:12px 0;">No withdraw methods available.</p>';
-          } else {
-            let html = '';
-            methods.forEach(m => {
-              html += `
-                    <div class="method-card" data-method-id="${m.id}" data-method-type="withdraw">
-                      <div class="method-left">
-                        <div class="method-img" style="background:var(--red-gradient);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:18px;">${m.name[0]}</div>
-                        <div>
-                          <div class="method-name">${m.name}</div>
-                          <div class="method-desc">Withdraw via ${m.name}</div>
-                        </div>
-                      </div>
-                      <div class="method-arrow">›</div>
-                    </div>`;
-            });
-            walletWithdrawMethods.innerHTML = html;
-            walletWithdrawMethods.querySelectorAll('.method-card').forEach(card => {
-              card.addEventListener('click', function() {
-                const methodId = this.dataset.methodId;
-                const method = state.paymentMethods.withdraw.find(m => m.id === methodId);
-                if (method) showWithdrawForm(method);
-              });
-            });
+            return;
           }
+          let html = '';
+          methods.forEach(m => {
+            html += `
+                  <div class="method-card" data-method-id="${m.id}" data-method-type="withdraw">
+                    <div class="method-left">
+                      <div class="method-img" style="background:var(--red-gradient);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:18px;">${m.name[0]}</div>
+                      <div>
+                        <div class="method-name">${m.name}</div>
+                        <div class="method-desc">Withdraw via ${m.name}</div>
+                      </div>
+                    </div>
+                    <div class="method-arrow">›</div>
+                  </div>`;
+          });
+          walletWithdrawMethods.innerHTML = html;
         }
       }
 
@@ -4238,8 +3940,6 @@
       }
 
       function showDepositForm(method) {
-        // Check verification before showing form (user can view but not submit)
-        // We'll allow view, but submit will check again.
         walletDepositFormContainer.style.display = '';
         walletWithdrawFormContainer.style.display = 'none';
         walletDepositMethods.style.display = 'none';
@@ -4298,11 +3998,6 @@
       submitDepositRequest.addEventListener('click', async function() {
         if (!state.currentUid) { toast('Sign in first.', 'error'); return; }
         if (state.maintenanceMode) { toast('Under maintenance. Try later.', 'error'); return; }
-        // Check verification
-        if (!checkVerificationAndWarn()) {
-          depositFormError.textContent = 'Please verify your email before depositing.';
-          return;
-        }
 
         const amount = parseFloat(depositAmountInput.value);
         const txnHash = depositTxHash.value.trim();
@@ -4338,7 +4033,6 @@
           depositWalletAddr.value = '';
           toast('Deposit request submitted!', 'success');
 
-          // Send Telegram notification to admin
           const adminMsg = `💰 <b>New Deposit Request</b>\n` +
             `👤 User: ${entry.userName} (${entry.userEmail})\n` +
             `🆔 ID: ${state.userId || state.currentUid}\n` +
@@ -4370,10 +4064,6 @@
       submitWithdrawRequest.addEventListener('click', async function() {
         if (!state.currentUid) { toast('Sign in first.', 'error'); return; }
         if (state.maintenanceMode) { toast('Under maintenance. Try later.', 'error'); return; }
-        if (!checkVerificationAndWarn()) {
-          withdrawFormError.textContent = 'Please verify your email before withdrawing.';
-          return;
-        }
 
         const amount = parseFloat(withdrawAmountInput.value);
         const walletAddr = withdrawWalletAddr.value.trim();
@@ -4584,15 +4274,14 @@
 
       switchQuickGame('uo');
 
-      // Check if user came from referral link
       if (window.Telegram && window.Telegram.WebApp) {
         const tg = window.Telegram.WebApp;
         const startParam = tg.initDataUnsafe?.start_param || '';
         if (startParam && startParam.startsWith('ref_')) {
           const refCode = startParam.replace('ref_', '');
           toast('Referral detected: ' + refCode + '! Welcome!', 'info', 5000);
-          if (signupReferral) signupReferral.value = refCode;
-          referralCodeInput.classList.add('show');
+          // Store referral for later use if needed
+          state.referralCode = refCode;
         }
       }
 
