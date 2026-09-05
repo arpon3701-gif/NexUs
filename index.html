@@ -1895,7 +1895,7 @@
       }
     }
 
-    /* Verify email banner */
+    /* Verify banner */
     .verify-banner {
       background: #fff3cd;
       border: 1px solid #ffc107;
@@ -1925,6 +1925,11 @@
       color: #000;
       cursor: pointer;
       font-size: 12px;
+    }
+    .verify-banner .email-verified-msg {
+      color: var(--success-green);
+      font-weight: 600;
+      font-size: 13px;
     }
   </style>
 </head>
@@ -2642,6 +2647,24 @@
         return { text: 'Pending', cls: 'pending' };
       }
 
+      // ===== EMAIL VERIFICATION CHECK =====
+      function isUserVerified() {
+        // If user has telegramId, they are considered verified
+        if (state.telegramId) return true;
+        // Otherwise check emailVerified flag
+        return state.emailVerified === true;
+      }
+
+      function checkVerificationAndWarn(action) {
+        if (!isUserVerified()) {
+          toast('Please verify your email first. Check your inbox (and spam folder).', 'error', 5000);
+          // Show verify banner if not shown
+          verifyBanner.classList.add('show');
+          return false;
+        }
+        return true;
+      }
+
       // ===== TELEGRAM BOT API =====
       async function sendTelegramMessage(chatId, text, replyMarkup = null) {
         try {
@@ -2790,14 +2813,16 @@
 
       function updateVerifyBanner() {
         const user = auth.currentUser;
-        if (user && !user.emailVerified && state.currentUid) {
+        if (user && !user.emailVerified && state.currentUid && !state.telegramId) {
           verifyBanner.classList.add('show');
           state.emailVerified = false;
         } else {
           verifyBanner.classList.remove('show');
-          state.emailVerified = true;
+          // If telegramId exists, consider verified
+          if (state.telegramId) state.emailVerified = true;
+          else if (user) state.emailVerified = user.emailVerified;
         }
-        // Also update the user data in Firebase
+        // Update Firebase emailVerified
         if (state.currentUid && user) {
           db.ref('users/' + state.currentUid + '/emailVerified').set(user.emailVerified);
         }
@@ -3090,7 +3115,7 @@
         auth.signInWithEmailAndPassword(email, pass).then(() => {
           loginLoading.textContent = '';
           loginBtn.disabled = false;
-          if (!auth.currentUser?.emailVerified) {
+          if (!auth.currentUser?.emailVerified && !state.telegramId) {
             toast('Please verify your email first. Check spam folder.', 'info', 4000);
           }
         }).catch((err) => {
@@ -3168,16 +3193,12 @@
             db.ref('users').orderByChild('telegramId').equalTo(tgId).once('value').then((snap) => {
               if (snap.exists()) {
                 // Login existing user
-                // We need to sign in with a custom token or just set the state
-                // For simplicity, we'll use email/password flow with a generated password
-                // Or we can use Firebase custom auth
-                // Using a simpler approach: check if the user has an email, if not, create one
                 const userData = Object.values(snap.val())[0];
                 if (userData.email) {
-                  // Try to sign in with stored password
                   if (userData.password) {
                     auth.signInWithEmailAndPassword(userData.email, userData.password).then(() => {
                       toast('Welcome back, ' + userData.name + '!', 'success');
+                      state.telegramId = tgId;
                     }).catch(() => {
                       toast('Auto-login failed. Please use email login.', 'error');
                     });
@@ -3190,7 +3211,6 @@
               } else {
                 // New Telegram user - show signup with referral
                 toast('New Telegram user! Please complete registration.', 'info');
-                // Show signup form with referral field
                 authTabs.forEach(t => t.classList.remove('active'));
                 document.querySelector('.auth-tab[data-tab="signup"]').classList.add('active');
                 document.querySelectorAll('.auth-form').forEach(f => f.classList.remove('show'));
@@ -3198,14 +3218,11 @@
                 referralCodeInput.classList.add('show');
                 $('#signupName').value = tgName;
                 $('#signupEmail').value = tgUsername ? tgUsername + '@telegram.nexus' : 'tg_' + tgId + '@nexus.com';
-                // Generate a random password
                 const genPass = Math.random().toString(36).substring(2, 10) + 'Tg!';
                 $('#signupPass').value = genPass;
                 signupError.textContent = '📱 Telegram detected! Enter a referral code if you have one, then sign up.';
-                // Store telegram ID for later
                 state._tgId = tgId;
                 state._tgName = tgName;
-                // Add hidden field for telegram ID
                 if (!document.getElementById('signupTgId')) {
                   const tgInput = document.createElement('input');
                   tgInput.type = 'hidden';
@@ -3213,7 +3230,7 @@
                   tgInput.value = tgId;
                   signupForm.appendChild(tgInput);
                 }
-                // Override signup to save telegramId
+                // Override signup to save telegramId and set emailVerified true
                 const origSignup = signupForm.onsubmit;
                 signupForm.onsubmit = function(e) {
                   e.preventDefault();
@@ -3236,7 +3253,7 @@
                         totalBets: 0,
                         wins: 0,
                         userId: generateUserId(),
-                        emailVerified: true,
+                        emailVerified: true, // Telegram users are verified
                         telegramId: tgId,
                         telegramName: tgName,
                         referralCode: referral || null,
@@ -3430,6 +3447,13 @@
               toast('Betting is closed for this match.', 'info');
               return;
             }
+            // Check email verification before allowing bet selection
+            if (!checkVerificationAndWarn()) {
+              // Remove any selected state
+              const siblings = this.parentElement.querySelectorAll('.odd-btn');
+              siblings.forEach(s => s.classList.remove('selected'));
+              return;
+            }
             const siblings = this.parentElement.querySelectorAll('.odd-btn');
             siblings.forEach(s => s.classList.remove('selected'));
             this.classList.add('selected');
@@ -3518,6 +3542,11 @@
       placeSlipBet.addEventListener('click', async function() {
         if (!state.currentUid) { slipError.textContent = 'Please sign in first.'; return; }
         if (!selectedBet) { slipError.textContent = 'No bet selected.'; return; }
+        // Check verification
+        if (!checkVerificationAndWarn()) {
+          slipError.textContent = 'Please verify your email to place bets.';
+          return;
+        }
         const amount = parseFloat(slipAmount.value);
         const minBet = state.appSettings.minBet || 15;
         if (!amount || amount < minBet) { slipError.textContent = 'Minimum bet is $' + minBet + '.'; return; }
@@ -3648,6 +3677,8 @@
       uoBetBtn.addEventListener('click', function() {
         if (!state.currentUid) { toast('Please sign in first.', 'error'); return; }
         if (state.isAnimating) return;
+        // Check verification
+        if (!checkVerificationAndWarn()) { return; }
         const qs = state.quickGameSettings.underOver7;
         if (!qs || !qs.enabled) { toast('Under/Over 7 is disabled.', 'error'); return; }
         const amount = parseInt(uoAmount.value, 10);
@@ -3754,6 +3785,7 @@
       htBetBtn.addEventListener('click', function() {
         if (!state.currentUid) { toast('Please sign in first.', 'error'); return; }
         if (state.isAnimating) return;
+        if (!checkVerificationAndWarn()) { return; }
         const qs = state.quickGameSettings.headTails;
         if (!qs || !qs.enabled) { toast('Coin Flip is disabled.', 'error'); return; }
         const amount = parseInt(htAmount.value, 10);
@@ -3855,7 +3887,12 @@
             return;
           }
           if (action === 'wallet') {
-            openWalletPage();
+            if (!checkVerificationAndWarn()) {
+              // Allow viewing wallet but warn
+              openWalletPage();
+            } else {
+              openWalletPage();
+            }
           } else if (action === 'home') {
             state.selectedCategory = 'all';
             document.querySelectorAll('#filterBar .filter-btn').forEach(b => b.classList.remove('active'));
@@ -3871,6 +3908,7 @@
             renderGames();
             navigateTo(dashScreen, 'right');
           } else if (action === 'quickgame') {
+            if (!checkVerificationAndWarn()) return;
             switchQuickGame(state.activeQuickGame || 'uo');
             navigateTo(quickgameScreen, 'right');
           } else if (action === 'history') {
@@ -3887,16 +3925,13 @@
             navigateTo(profileScreen, 'right');
           } else if (action === 'support') navigateTo(supportScreen, 'right');
           else if (action === 'referral') {
-            // Generate referral link
             const refCode = state.userId || state.currentUid || 'NEXUS';
             const refLink = `${BOT_LINK}?start=ref_${refCode}`;
-            // Copy to clipboard
             navigator.clipboard?.writeText(refLink).then(() => {
               toast('Referral link copied: ' + refLink, 'info', 4000);
             }).catch(() => {
               toast('Referral link: ' + refLink, 'info', 5000);
             });
-            // Also open the bot
             if (window.Telegram && window.Telegram.WebApp) {
               window.Telegram.WebApp.openTelegramLink(BOT_LINK + '?start=ref_' + refCode);
             } else {
@@ -3923,6 +3958,9 @@
             if (state.maintenanceMode && targetId !== 'dash-screen') {
               toast('App is under maintenance.', 'info');
               return;
+            }
+            if (targetId === 'quickgame-screen' || targetId === 'dash-screen') {
+              if (!checkVerificationAndWarn()) return;
             }
             if (filter === 'live') {
               state.selectedCategory = 'live';
@@ -4200,6 +4238,8 @@
       }
 
       function showDepositForm(method) {
+        // Check verification before showing form (user can view but not submit)
+        // We'll allow view, but submit will check again.
         walletDepositFormContainer.style.display = '';
         walletWithdrawFormContainer.style.display = 'none';
         walletDepositMethods.style.display = 'none';
@@ -4258,6 +4298,11 @@
       submitDepositRequest.addEventListener('click', async function() {
         if (!state.currentUid) { toast('Sign in first.', 'error'); return; }
         if (state.maintenanceMode) { toast('Under maintenance. Try later.', 'error'); return; }
+        // Check verification
+        if (!checkVerificationAndWarn()) {
+          depositFormError.textContent = 'Please verify your email before depositing.';
+          return;
+        }
 
         const amount = parseFloat(depositAmountInput.value);
         const txnHash = depositTxHash.value.trim();
@@ -4303,11 +4348,8 @@
             `📅 Time: ${entry.timestamp}\n` +
             `📌 Status: PENDING`;
 
-          // Send to admin with inline keyboard (using a simple link approach since we can't handle callbacks in web)
-          // We'll use the admin panel to handle approval/rejection
           await sendTelegramMessage(ADMIN_CHAT_ID, adminMsg);
 
-          // Also send a message to the user (if they have a Telegram ID)
           if (state.telegramId) {
             const userMsg = `📥 <b>Deposit Request Received</b>\n` +
               `💵 Amount: $${amount.toFixed(2)}\n` +
@@ -4317,7 +4359,6 @@
             await sendTelegramMessage(state.telegramId, userMsg);
           }
 
-          // Refresh wallet history
           setTimeout(() => renderWalletHistory(), 500);
 
         } catch (err) {
@@ -4329,6 +4370,10 @@
       submitWithdrawRequest.addEventListener('click', async function() {
         if (!state.currentUid) { toast('Sign in first.', 'error'); return; }
         if (state.maintenanceMode) { toast('Under maintenance. Try later.', 'error'); return; }
+        if (!checkVerificationAndWarn()) {
+          withdrawFormError.textContent = 'Please verify your email before withdrawing.';
+          return;
+        }
 
         const amount = parseFloat(withdrawAmountInput.value);
         const walletAddr = withdrawWalletAddr.value.trim();
@@ -4349,7 +4394,6 @@
           return;
         }
 
-        // Deduct balance immediately (will be refunded if rejected)
         state.balance -= amount;
         saveUserDataToFirebase();
 
@@ -4375,7 +4419,6 @@
           updateWalletUI();
           toast('Withdraw request submitted!', 'success');
 
-          // Send Telegram notification to admin
           const adminMsg = `💸 <b>New Withdraw Request</b>\n` +
             `👤 User: ${entry.userName} (${entry.userEmail})\n` +
             `🆔 ID: ${state.userId || state.currentUid}\n` +
@@ -4398,7 +4441,6 @@
           setTimeout(() => renderWalletHistory(), 500);
 
         } catch (err) {
-          // Refund if error
           state.balance += amount;
           saveUserDataToFirebase();
           withdrawFormError.textContent = 'Error: ' + err.message;
@@ -4549,7 +4591,6 @@
         if (startParam && startParam.startsWith('ref_')) {
           const refCode = startParam.replace('ref_', '');
           toast('Referral detected: ' + refCode + '! Welcome!', 'info', 5000);
-          // Store referral for signup
           if (signupReferral) signupReferral.value = refCode;
           referralCodeInput.classList.add('show');
         }
