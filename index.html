@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-    <title>NexusPlay – TG Login & Referral</title>
+    <title>NexusPlay – Telegram Betting</title>
 
     <script src="https://www.gstatic.com/firebasejs/11.0.1/firebase-app-compat.js">
     </script>
@@ -228,34 +228,16 @@
             -webkit-text-fill-color: transparent;
             background-clip: text;
         }
-        .tg-login-btn {
-            width: 100%;
-            padding: 14px;
-            background: var(--tg-blue);
-            color: #fff;
-            border: none;
+        .tg-auto-login-msg {
+            text-align: center;
+            padding: 12px;
+            background: rgba(0, 136, 204, 0.1);
             border-radius: var(--radius-sm);
-            font-weight: 700;
-            font-size: 16px;
-            cursor: pointer;
-            transition: transform 0.2s, box-shadow 0.2s;
-            box-shadow: 0 4px 12px rgba(0, 136, 204, 0.3);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
+            color: var(--tg-blue);
+            font-weight: 600;
+            font-size: 14px;
             margin-bottom: 16px;
-        }
-        .tg-login-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 20px rgba(0, 136, 204, 0.4);
-        }
-        .tg-login-btn:active {
-            transform: scale(0.97);
-        }
-        .tg-login-btn img {
-            width: 24px;
-            height: 24px;
+            border: 1px solid rgba(0, 136, 204, 0.2);
         }
         .auth-divider {
             text-align: center;
@@ -1757,8 +1739,8 @@
         <div class="modal-box">
             <h3>Wallet</h3>
             <div class="balance-label">Your Balance</div>
-            <div class="balance-big" id="modalBalance">0</div>
-            <div class="balance-label">USDT</div>
+            <div class="balance-big" id="modalBalance">0.00</div>
+            <div class="balance-label">$ USD</div>
             <div id="maintenanceNotice" class="maintenance-notice" style="display:none;">
                 <span class="m-icon">🔧</span>
                 <span id="maintenanceMsg">Under Maintenance</span>
@@ -1778,7 +1760,7 @@
                         <span class="description" id="depositDescription"></span>
                     </div>
                     <div class="min-max-info" id="depositMinMax"></div>
-                    <input type="number" id="depositAmount" placeholder="Amount (USDT)" min="1" />
+                    <input type="number" id="depositAmount" placeholder="Amount ($)" min="0.5" step="0.01" />
                     <input type="text" id="depositTxnId" placeholder="Transaction ID" />
                     <input type="text" id="depositPhone" placeholder="Sender Phone Number" />
                     <button class="btn-deposit" id="submitDepositBtn">Submit Deposit Request</button>
@@ -1788,7 +1770,7 @@
                     <select id="withdrawMethodSelect"><option value="">Select method</option></select>
                     <div class="min-max-info" id="withdrawMinMax"></div>
                     <input type="text" id="withdrawNumber" placeholder="Your Phone/Account Number" />
-                    <input type="number" id="withdrawAmount" placeholder="Amount (USDT)" min="1" />
+                    <input type="number" id="withdrawAmount" placeholder="Amount ($)" min="1" step="0.01" />
                     <button class="btn-withdraw" id="submitWithdrawBtn">Submit Withdraw Request</button>
                     <div id="withdrawError" style="color:var(--error-red);font-size:13px;min-height:20px;"></div>
                 </div>
@@ -1816,12 +1798,9 @@
         <div class="screen" id="auth-screen">
             <div class="auth-box">
                 <div class="mini-logo">NexusPlay</div>
-                <button class="tg-login-btn" id="tgLoginBtn">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="white">
-                        <path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/>
-                    </svg>
-                    Login with Telegram
-                </button>
+                <div class="tg-auto-login-msg" id="tgAutoMsg">
+                    🔄 Connecting to Telegram...
+                </div>
                 <div class="auth-divider">or</div>
                 <div class="auth-tabs">
                     <button class="auth-tab active" data-tab="login">Sign In</button>
@@ -1862,8 +1841,8 @@
                 <button class="menu-btn" id="menuBtn">☰</button>
                 <div class="dash-title">NexusPlay</div>
                 <div class="wallet-pill" id="walletPill">
-                    <span class="coin">₮</span>
-                    <span id="walletDisplay">0</span>
+                    <span class="coin">$</span>
+                    <span id="walletDisplay">0.00</span>
                 </div>
             </div>
             <div class="filter-bar" id="filterBar">
@@ -1881,14 +1860,14 @@
                     <div class="streak-badge">Streak <span id="streakCount">0</span></div>
                 </div>
                 <div id="gameCardsContainer"></div>
-                <div style="text-align:center;padding:24px 0;color:var(--text-muted);font-size:13px;">NexusPlay · TG Auth</div>
+                <div style="text-align:center;padding:24px 0;color:var(--text-muted);font-size:13px;">NexusPlay · Telegram Auto-Login</div>
             </div>
         </div>
 
         <!-- Quick Game -->
         <div class="screen" id="quickgame-screen">
             <div style="text-align:right;padding:8px 16px;color:var(--primary-red);font-weight:600;width:100%;max-width:400px;">
-                Balance: USDT <span id="quickBalance">0</span>
+                Balance: $ <span id="quickBalance">0.00</span>
             </div>
 
             <div class="quickgame-tabs" id="quickgameTabs">
@@ -1912,15 +1891,15 @@
                     <button data-choice="over">Over 7</button>
                 </div>
                 <div class="quick-amount-options" id="uoAmountOptions">
-                    <button class="amt-btn active-amt" data-amount="1">USDT 1</button>
-                    <button class="amt-btn" data-amount="2">USDT 2</button>
-                    <button class="amt-btn" data-amount="5">USDT 5</button>
-                    <button class="amt-btn" data-amount="10">USDT 10</button>
-                    <button class="amt-btn" data-amount="20">USDT 20</button>
-                    <button class="amt-btn" data-amount="50">USDT 50</button>
+                    <button class="amt-btn active-amt" data-amount="0.15">$0.15</button>
+                    <button class="amt-btn" data-amount="0.50">$0.50</button>
+                    <button class="amt-btn" data-amount="1">$1</button>
+                    <button class="amt-btn" data-amount="2">$2</button>
+                    <button class="amt-btn" data-amount="5">$5</button>
+                    <button class="amt-btn" data-amount="10">$10</button>
                 </div>
                 <div class="quick-bet-row">
-                    <input type="number" id="uoAmount" value="1" min="1" placeholder="Amount" />
+                    <input type="number" id="uoAmount" value="0.15" min="0.15" step="0.01" placeholder="Amount" />
                     <button id="uoBetBtn">Bet</button>
                 </div>
                 <div class="quick-result" id="uoResult"></div>
@@ -1943,15 +1922,15 @@
                     <button data-choice="tails">Tails</button>
                 </div>
                 <div class="quick-amount-options" id="htAmountOptions">
-                    <button class="amt-btn active-amt" data-amount="1">USDT 1</button>
-                    <button class="amt-btn" data-amount="2">USDT 2</button>
-                    <button class="amt-btn" data-amount="5">USDT 5</button>
-                    <button class="amt-btn" data-amount="10">USDT 10</button>
-                    <button class="amt-btn" data-amount="20">USDT 20</button>
-                    <button class="amt-btn" data-amount="50">USDT 50</button>
+                    <button class="amt-btn active-amt" data-amount="0.15">$0.15</button>
+                    <button class="amt-btn" data-amount="0.50">$0.50</button>
+                    <button class="amt-btn" data-amount="1">$1</button>
+                    <button class="amt-btn" data-amount="2">$2</button>
+                    <button class="amt-btn" data-amount="5">$5</button>
+                    <button class="amt-btn" data-amount="10">$10</button>
                 </div>
                 <div class="quick-bet-row">
-                    <input type="number" id="htAmount" value="1" min="1" placeholder="Amount" />
+                    <input type="number" id="htAmount" value="0.15" min="0.15" step="0.01" placeholder="Amount" />
                     <button id="htBetBtn">Flip</button>
                 </div>
                 <div class="quick-result" id="htResult"></div>
@@ -1988,7 +1967,7 @@
                 <!-- Referral Card -->
                 <div class="referral-card" id="referralCard">
                     <div style="font-weight:700;font-size:16px;margin-bottom:6px;">🎁 Refer & Earn</div>
-                    <div style="font-size:13px;color:var(--text-muted);">Share your code & earn <span class="ref-bonus">$0.05 USDT</span> per referral</div>
+                    <div style="font-size:13px;color:var(--text-muted);">Share your link & earn <span class="ref-bonus">$0.05</span> per referral<br/>New user gets <span class="ref-bonus">$0.15</span> bonus!</div>
                     <div class="ref-code" id="refCodeDisplay">NXP-XXXXX</div>
                     <div style="display:flex;justify-content:center;gap:8px;flex-wrap:wrap;">
                         <button class="copy-ref-btn" id="copyRefCode">Copy Code</button>
@@ -1996,7 +1975,7 @@
                     </div>
                     <div class="ref-stats">
                         <span>👥 <strong id="refTotalCount">0</strong> Referrals</span>
-                        <span>💰 <strong id="refEarned">0</strong> USDT</span>
+                        <span>💰 <strong id="refEarned">0.00</strong> $</span>
                     </div>
                 </div>
 
@@ -2102,7 +2081,7 @@
             <button class="drawer-item" data-action="logout"><span class="icon">🚪</span> Sign Out</button>
         </div>
         <div class="drawer-footer">
-            <div>NexusPlay · TG Auth v6.0</div>
+            <div>NexusPlay · Telegram v7.0</div>
             <div style="margin-top:4px;">Bet with Confidence</div>
         </div>
     </div>
@@ -2117,9 +2096,9 @@
         <div class="slip-body">
             <p id="slipSelection" style="color:var(--text-primary);font-size:15px;">Select a team</p>
             <p style="color:var(--text-muted);">Odds: <span id="slipOdds" style="color:var(--primary-red);font-weight:700;">0.00</span></p>
-            <label style="color:var(--text-muted);">Amount (Min USDT1)</label>
-            <input type="number" id="slipAmount" value="1" min="1" />
-            <p style="color:var(--text-muted);">Potential Win: <span class="potential" id="slipPotential">USDT0.00</span></p>
+            <label style="color:var(--text-muted);">Amount (Min $0.15)</label>
+            <input type="number" id="slipAmount" value="0.15" min="0.15" step="0.01" />
+            <p style="color:var(--text-muted);">Potential Win: <span class="potential" id="slipPotential">$0.00</span></p>
             <button class="place-btn" id="placeSlipBet">Place Bet</button>
             <p id="slipError" style="color:var(--error-red);font-size:13px;min-height:20px;"></p>
         </div>
@@ -2134,7 +2113,6 @@
         <button data-screen="sport-bet-history-screen"><span class="nav-icon">⚽</span> Sports Bet</button>
     </div>
 
-    <script src="https://telegram.org/js/telegram-widget.js?22" defer></script>
     <script>
         (function() {
             'use strict';
@@ -2153,7 +2131,9 @@
             // ─── Telegram Bot Config ────────────────────────────────────────────────
             const TELEGRAM_BOT_TOKEN = "8995976968:AAEG12ABJBmFHwG5aCCgiXvlCVn2totHiRw";
             const TELEGRAM_ADMIN_ID = "7461756702";
-            const REFERRAL_BONUS = 0.05; // USDT
+            const REFERRAL_BONUS_REFERRER = 0.05; // Referrer gets $0.05
+            const REFERRAL_BONUS_NEWUSER = 0.15; // New user gets $0.15
+            const BOT_USERNAME = "nexusplayy_bot";
 
             firebase.initializeApp(firebaseConfig);
             const auth = firebase.auth();
@@ -2176,7 +2156,7 @@
                     headTails: { enabled: true, winPercentage: 50, forceWin: false }
                 },
                 supportInfo: { phone: '', email: '', messenger: '', info: '', telegramLink: '', whatsappLink: '' },
-                appSettings: { minDeposit: 1, minWithdraw: 1, maxWithdraw: 5000, minBet: 1 },
+                appSettings: { minDeposit: 0.5, minWithdraw: 1, maxWithdraw: 5000, minBet: 0.15 },
                 maintenanceMode: false,
                 maintenanceMessage: 'Under Maintenance',
                 selectedCategory: 'all',
@@ -2189,6 +2169,7 @@
                 referredBy: '',
                 tgId: null,
                 tgUsername: null,
+                startParam: null,
             };
 
             let globalListenersSetup = false;
@@ -2282,7 +2263,7 @@
             const signupBtn = $('#signupBtn');
             const authTabs = $$('.auth-tab');
             const signupRefCode = $('#signupRefCode');
-            const tgLoginBtn = $('#tgLoginBtn');
+            const tgAutoMsg = $('#tgAutoMsg');
 
             const paymentHistoryList = $('#paymentHistoryList');
             const historyBackBtn = $('#historyBackBtn');
@@ -2382,45 +2363,42 @@
                 localStorage.setItem('nexus_ref_used', 'true');
             }
 
-            // ─── Telegram Auth ──────────────────────────────────────────────────────
+            // ─── Telegram WebApp Auto-Login ────────────────────────────────────────
 
-            async function loginWithTelegram() {
-                try {
-                    // Use Telegram Web App Widget
-                    if (typeof Telegram !== 'undefined' && Telegram.Login) {
-                        Telegram.Login.auth({
-                            bot_id: '8995976968',
-                            request_access: 'write',
-                            on_auth: async (user) => {
-                                // user object from Telegram
-                                const tgId = user.id;
-                                const tgUsername = user.username || user.first_name || 'TG_User';
-                                state.tgId = tgId;
-                                state.tgUsername = tgUsername;
-                                await handleTelegramLogin(tgId, tgUsername, user);
-                            },
-                            on_error: (err) => {
-                                toast('Telegram login error: ' + err, 'error');
-                            }
-                        });
-                    } else {
-                        // Fallback: simulate Telegram login using bot redirect (for demo)
-                        // In production, use the Telegram Widget properly.
-                        // For this demo, we'll prompt user to enter Telegram ID manually.
-                        const tgId = prompt('Enter your Telegram ID (for demo):');
-                        if (tgId) {
-                            state.tgId = tgId;
-                            state.tgUsername = 'TG_User_' + tgId;
-                            await handleTelegramLogin(tgId, state.tgUsername, { id: tgId, username: state.tgUsername });
-                        }
+            function getTelegramUser() {
+                if (window.Telegram && window.Telegram.WebApp) {
+                    const initData = window.Telegram.WebApp.initDataUnsafe;
+                    if (initData && initData.user) {
+                        return {
+                            id: initData.user.id,
+                            username: initData.user.username || initData.user.first_name || 'TG_User',
+                            first_name: initData.user.first_name,
+                            last_name: initData.user.last_name,
+                            start_param: initData.start_param || null,
+                        };
                     }
-                } catch (e) {
-                    toast('Telegram login error: ' + e.message, 'error');
                 }
+                return null;
             }
 
-            async function handleTelegramLogin(tgId, tgUsername, userData) {
-                // Check if user already exists with this TG ID
+            async function autoLoginWithTelegram() {
+                const tgUser = getTelegramUser();
+                if (!tgUser) {
+                    if (tgAutoMsg) tgAutoMsg.textContent = '📱 Not in Telegram WebApp. Use email login.';
+                    return false;
+                }
+
+                if (tgAutoMsg) tgAutoMsg.textContent = '✅ Telegram detected! Logging in...';
+
+                const tgId = tgUser.id;
+                const tgUsername = tgUser.username || 'TG_User';
+                const startParam = tgUser.start_param;
+
+                state.tgId = tgId;
+                state.tgUsername = tgUsername;
+                state.startParam = startParam;
+
+                // Check if user exists with this TG ID
                 const tgSnap = await db.ref('telegramUsers').orderByChild('tgId').equalTo(tgId).once('value');
                 let uid = null;
                 let existingUser = false;
@@ -2433,8 +2411,6 @@
                 }
 
                 if (existingUser && uid) {
-                    // Sign in with Firebase using custom token or just set state
-                    // For simplicity, we'll fetch user data from Firebase
                     const userSnap = await db.ref('users/' + uid).once('value');
                     if (userSnap.exists()) {
                         const userData = userSnap.val();
@@ -2467,53 +2443,59 @@
                             screenHistory = [];
                         }
                         toast('Welcome back, ' + (userData.name || 'Player') + '!', 'success');
-                        return;
+                        return true;
                     }
                 }
 
-                // New user - create account with TG ID
-                const name = userData.username || userData.first_name || 'TG_Player';
+                // ─── New user ─────────────────────────────────────────────────────
+                const name = tgUser.first_name || tgUser.username || 'TG_Player';
                 const email = 'tg_' + tgId + '@nexus.tg';
                 const uidGen = generateUserId();
                 const refCode = generateRefCode();
 
-                // Check if there's a referral code in URL
-                const params = new URLSearchParams(window.location.search);
-                const refCodeFromUrl = params.get('ref');
+                // Check for referral from start_param
                 let referralApplied = false;
-                if (refCodeFromUrl && !isDeviceUsedForReferral()) {
-                    // Apply referral
-                    const refSnap = await db.ref('referrals').orderByChild('code').equalTo(refCodeFromUrl.toUpperCase())
+                let referrerUid = null;
+                const refCodeFromStart = startParam;
+                if (refCodeFromStart && !isDeviceUsedForReferral()) {
+                    const refSnap = await db.ref('referrals').orderByChild('code').equalTo(refCodeFromStart.toUpperCase())
                         .once('value');
                     if (refSnap.exists()) {
                         const refData = refSnap.val();
                         const refKey = Object.keys(refData)[0];
-                        const referrerUid = refData[refKey].uid;
+                        referrerUid = refData[refKey].uid;
                         if (referrerUid) {
-                            // Add bonus to referrer
                             const referrerSnap = await db.ref('users/' + referrerUid).once('value');
                             if (referrerSnap.exists()) {
+                                // Give referrer bonus
                                 const currentBalance = referrerSnap.val().balance || 0;
-                                await db.ref('users/' + referrerUid + '/balance').set(currentBalance + REFERRAL_BONUS);
+                                await db.ref('users/' + referrerUid + '/balance').set(currentBalance + REFERRAL_BONUS_REFERRER);
                                 const currentCount = referrerSnap.val().referralCount || 0;
                                 await db.ref('users/' + referrerUid + '/referralCount').set(currentCount + 1);
                                 await db.ref('users/' + referrerUid + '/referrals/' + tgId).set(true);
                                 const earned = referrerSnap.val().referralEarned || 0;
-                                await db.ref('users/' + referrerUid + '/referralEarned').set(earned + REFERRAL_BONUS);
+                                await db.ref('users/' + referrerUid + '/referralEarned').set(earned + REFERRAL_BONUS_REFERRER);
                                 await db.ref('referrals/' + refKey + '/count').set(currentCount + 1);
                                 await db.ref('referrals/' + refKey + '/referredUsers/' + tgId).set(true);
                                 markDeviceReferralUsed();
                                 referralApplied = true;
-                                toast('Referral bonus applied! You earned $' + REFERRAL_BONUS + ' USDT!', 'success');
+                                toast('Referrer earned $' + REFERRAL_BONUS_REFERRER + '!', 'success');
+                                // Notify admin
+                                const adminMsg =
+                                    `👤 New referral!\nReferrer: ${referrerSnap.val().name || 'Unknown'}\nNew user: ${name}\nTG ID: ${tgId}\nBonus: $${REFERRAL_BONUS_REFERRER}`;
+                                sendTelegramMessage(adminMsg);
                             }
                         }
                     }
                 }
 
+                // Create user with new user bonus
+                const newUserBonus = REFERRAL_BONUS_NEWUSER;
+
                 const userObj = {
                     name: name,
                     email: email,
-                    balance: 0,
+                    balance: newUserBonus, // New user gets bonus
                     streak: 0,
                     totalBets: 0,
                     wins: 0,
@@ -2524,10 +2506,10 @@
                     tgId: tgId,
                     tgUsername: tgUsername,
                     createdAt: firebase.database.ServerValue.TIMESTAMP,
-                    referredBy: refCodeFromUrl && referralApplied ? refCodeFromUrl.toUpperCase() : null,
+                    referredBy: referrerUid || null,
+                    referredByCode: refCodeFromStart || null,
                 };
 
-                // Create user in Firebase
                 const newUserRef = db.ref('users').push();
                 const newUid = newUserRef.key;
                 await newUserRef.set(userObj);
@@ -2549,7 +2531,7 @@
                 };
                 state.userId = uidGen;
                 state.referralCode = refCode;
-                state.balance = 0;
+                state.balance = newUserBonus;
                 state.streak = 0;
                 state.totalBets = 0;
                 state.wins = 0;
@@ -2569,7 +2551,19 @@
                     switchScreen(dashScreen, 'right');
                     screenHistory = [];
                 }
-                toast('Welcome, ' + name + '! Your referral code: ' + refCode, 'success');
+
+                let welcomeMsg = 'Welcome, ' + name + '! You got $' + newUserBonus + ' bonus!';
+                if (referralApplied) {
+                    welcomeMsg += ' Referral applied!';
+                }
+                toast(welcomeMsg, 'success');
+
+                // Send welcome message to admin
+                const adminWelcome =
+                    `🆕 New user joined!\nName: ${name}\nTG ID: ${tgId}\nUser ID: ${uidGen}\nBonus: $${newUserBonus}\nReferred by: ${referrerUid || 'None'}`;
+                sendTelegramMessage(adminWelcome);
+
+                return true;
             }
 
             // ─── Screen Navigation ──────────────────────────────────────────────────
@@ -2658,7 +2652,7 @@
         ─────────────────
         👤 User: ${userName || 'Unknown'}
         🆔 User ID: ${userId || 'N/A'}
-        💵 Amount: <b>${amount} USDT</b>
+        💵 Amount: <b>$${amount}</b>
         🏦 Method: ${method || 'N/A'}
         🔢 Txn ID: ${txnId || 'N/A'}
         📱 Phone: ${phone || 'N/A'}
@@ -2770,7 +2764,7 @@
                 appSettingsListener = db.ref('settings').on('value', (snap) => {
                     const data = snap.val();
                     if (data) state.appSettings = { ...state.appSettings, ...data };
-                    if (!data || data.minBet === undefined) state.appSettings.minBet = 1;
+                    if (!data || data.minBet === undefined) state.appSettings.minBet = 0.15;
                     updateWalletMinMaxUI();
                 });
 
@@ -2955,14 +2949,14 @@
             function updateWalletMinMaxUI() {
                 const s = state.appSettings;
                 if (depositMinMax) depositMinMax.textContent =
-                    `Min Deposit: USDT${s.minDeposit || 1} | Min Withdraw: USDT${s.minWithdraw || 1} | Max Withdraw: USDT${s.maxWithdraw || 5000}`;
+                    `Min Deposit: $${s.minDeposit || 0.5} | Min Withdraw: $${s.minWithdraw || 1} | Max Withdraw: $${s.maxWithdraw || 5000}`;
                 if (withdrawMinMax) withdrawMinMax.textContent =
-                    `Min Withdraw: USDT${s.minWithdraw || 1} | Max Withdraw: USDT${s.maxWithdraw || 5000}`;
-                if (depositAmount) depositAmount.min = s.minDeposit || 1;
+                    `Min Withdraw: $${s.minWithdraw || 1} | Max Withdraw: $${s.maxWithdraw || 5000}`;
+                if (depositAmount) depositAmount.min = s.minDeposit || 0.5;
                 if (withdrawAmount) withdrawAmount.min = s.minWithdraw || 1;
-                if (slipAmount) slipAmount.min = state.appSettings.minBet || 1;
-                if (uoAmount) uoAmount.min = state.appSettings.minBet || 1;
-                if (htAmount) htAmount.min = state.appSettings.minBet || 1;
+                if (slipAmount) slipAmount.min = state.appSettings.minBet || 0.15;
+                if (uoAmount) uoAmount.min = state.appSettings.minBet || 0.15;
+                if (htAmount) htAmount.min = state.appSettings.minBet || 0.15;
             }
 
             async function processPendingBets() {
@@ -3049,115 +3043,134 @@
 
             setupGlobalListeners();
 
-            // Check for existing session
-            auth.onAuthStateChanged(async (firebaseUser) => {
-                state.authReady = true;
-                if (firebaseUser) {
-                    const uid = firebaseUser.uid;
-                    state.currentUid = uid;
-                    const userSnap = await db.ref('users/' + uid).once('value');
-                    let userData = userSnap.val();
-                    if (userData) {
-                        state.currentUser = {
-                            name: userData.name || 'Player',
-                            email: userData.email || '',
-                            uid: uid,
-                            tgId: userData.tgId || null,
-                            tgUsername: userData.tgUsername || null,
-                        };
-                        state.userId = userData.userId || generateUserId();
-                        state.referralCode = userData.referralCode || '';
-                        state.referralCount = userData.referralCount || 0;
-                        state.referralEarned = userData.referralEarned || 0;
-                        state.tgId = userData.tgId || null;
-                        state.tgUsername = userData.tgUsername || null;
-                        if (!userData.userId) {
-                            db.ref('users/' + uid + '/userId').set(state.userId);
-                        }
-                        if (!userData.referralCode) {
-                            const newCode = generateRefCode();
-                            state.referralCode = newCode;
-                            db.ref('users/' + uid + '/referralCode').set(newCode);
-                            db.ref('referrals/' + newCode).set({
-                                uid: uid,
-                                code: newCode,
-                                count: 0,
-                                createdAt: firebase.database.ServerValue.TIMESTAMP
-                            });
-                        }
-                        setupUserSpecificListeners(uid);
-                        updateDrawerUI();
-                        updateWalletUI();
-                        updateStreakUI();
-                        updateMaintenanceUI();
-                        updateQuickGameUI();
-                        updateWalletMinMaxUI();
-                        updateReferralUI();
+            // First, try Telegram auto-login
+            let tgLoginAttempted = false;
 
-                        if (state.maintenanceMode) {
-                            if (currentScreen === maintenanceScreen || currentScreen === authScreen || currentScreen ===
-                                loadingScreen) return;
-                            switchScreen(maintenanceScreen, 'right');
-                            screenHistory = [];
-                        } else {
-                            if (currentScreen === loadingScreen) {
-                                loadingScreen.classList.add('fade-out');
-                                setTimeout(() => { switchScreen(dashScreen, 'right');
-                                    screenHistory = []; }, 400);
-                            } else if (currentScreen === authScreen || currentScreen === maintenanceScreen) {
-                                switchScreen(dashScreen, 'right');
-                                screenHistory = [];
-                            }
-                        }
-                        toast('Welcome, ' + (userData.name || 'Player') + '!', 'success');
-                        setTimeout(processPendingBets, 400);
+            async function initAuth() {
+                if (tgLoginAttempted) return;
+                tgLoginAttempted = true;
+
+                // Check if in Telegram WebApp
+                const tgUser = getTelegramUser();
+                if (tgUser) {
+                    const success = await autoLoginWithTelegram();
+                    if (success) {
+                        // Already logged in via TG
+                        return;
                     }
                 } else {
-                    state.currentUser = null;
-                    state.currentUid = null;
-                    state.balance = 0;
-                    state.streak = 0;
-                    state.totalBets = 0;
-                    state.wins = 0;
-                    state.betHistory = [];
-                    state.paymentHistory = [];
-                    state.userId = '';
-                    state.referralCode = '';
-                    state.referralCount = 0;
-                    state.referralEarned = 0;
-                    state.tgId = null;
-                    state.tgUsername = null;
-                    if (userDataListener && state.currentUid) {
-                        db.ref('users/' + state.currentUid).off('value', userDataListener);
-                        userDataListener = null;
-                    }
-                    if (betsListener) {
-                        db.ref('bets/' + state.currentUid).off('value', betsListener);
-                        betsListener = null;
-                    }
-                    if (paymentRequestsListener) {
-                        db.ref('paymentRequests/' + state.currentUid).off('value', paymentRequestsListener);
-                        paymentRequestsListener = null;
-                    }
-                    updateDrawerUI();
-                    updateWalletUI();
-                    updateStreakUI();
-                    updateReferralUI();
-                    screenHistory = [];
-                    if (currentScreen === loadingScreen) {
-                        loadingScreen.classList.add('fade-out');
-                        setTimeout(() => { switchScreen(authScreen, 'right');
-                            screenHistory = []; }, 400);
-                    } else if (currentScreen !== authScreen) {
-                        switchScreen(authScreen, 'left');
-                        toast('Signed out.', 'info');
-                    }
+                    if (tgAutoMsg) tgAutoMsg.textContent = '📱 Open from Telegram bot for auto-login.';
                 }
-            });
 
-            // ─── Telegram Login Button ─────────────────────────────────────────────
+                // Fallback: Firebase auth state listener for email/password
+                auth.onAuthStateChanged(async (firebaseUser) => {
+                    state.authReady = true;
+                    if (firebaseUser) {
+                        const uid = firebaseUser.uid;
+                        state.currentUid = uid;
+                        const userSnap = await db.ref('users/' + uid).once('value');
+                        let userData = userSnap.val();
+                        if (userData) {
+                            state.currentUser = {
+                                name: userData.name || 'Player',
+                                email: userData.email || '',
+                                uid: uid,
+                                tgId: userData.tgId || null,
+                                tgUsername: userData.tgUsername || null,
+                            };
+                            state.userId = userData.userId || generateUserId();
+                            state.referralCode = userData.referralCode || '';
+                            state.referralCount = userData.referralCount || 0;
+                            state.referralEarned = userData.referralEarned || 0;
+                            state.tgId = userData.tgId || null;
+                            state.tgUsername = userData.tgUsername || null;
+                            if (!userData.userId) {
+                                db.ref('users/' + uid + '/userId').set(state.userId);
+                            }
+                            if (!userData.referralCode) {
+                                const newCode = generateRefCode();
+                                state.referralCode = newCode;
+                                db.ref('users/' + uid + '/referralCode').set(newCode);
+                                db.ref('referrals/' + newCode).set({
+                                    uid: uid,
+                                    code: newCode,
+                                    count: 0,
+                                    createdAt: firebase.database.ServerValue.TIMESTAMP
+                                });
+                            }
+                            setupUserSpecificListeners(uid);
+                            updateDrawerUI();
+                            updateWalletUI();
+                            updateStreakUI();
+                            updateMaintenanceUI();
+                            updateQuickGameUI();
+                            updateWalletMinMaxUI();
+                            updateReferralUI();
 
-            tgLoginBtn.addEventListener('click', loginWithTelegram);
+                            if (state.maintenanceMode) {
+                                if (currentScreen === maintenanceScreen || currentScreen === authScreen ||
+                                    currentScreen === loadingScreen) return;
+                                switchScreen(maintenanceScreen, 'right');
+                                screenHistory = [];
+                            } else {
+                                if (currentScreen === loadingScreen) {
+                                    loadingScreen.classList.add('fade-out');
+                                    setTimeout(() => { switchScreen(dashScreen, 'right');
+                                        screenHistory = []; }, 400);
+                                } else if (currentScreen === authScreen || currentScreen === maintenanceScreen) {
+                                    switchScreen(dashScreen, 'right');
+                                    screenHistory = [];
+                                }
+                            }
+                            toast('Welcome, ' + (userData.name || 'Player') + '!', 'success');
+                            setTimeout(processPendingBets, 400);
+                        }
+                    } else {
+                        // No Firebase user, but maybe TG user already logged in? Handled above.
+                        if (!state.currentUid) {
+                            state.currentUser = null;
+                            state.currentUid = null;
+                            state.balance = 0;
+                            state.streak = 0;
+                            state.totalBets = 0;
+                            state.wins = 0;
+                            state.betHistory = [];
+                            state.paymentHistory = [];
+                            state.userId = '';
+                            state.referralCode = '';
+                            state.referralCount = 0;
+                            state.referralEarned = 0;
+                            state.tgId = null;
+                            state.tgUsername = null;
+                            if (userDataListener && state.currentUid) {
+                                db.ref('users/' + state.currentUid).off('value', userDataListener);
+                                userDataListener = null;
+                            }
+                            if (betsListener) {
+                                db.ref('bets/' + state.currentUid).off('value', betsListener);
+                                betsListener = null;
+                            }
+                            if (paymentRequestsListener) {
+                                db.ref('paymentRequests/' + state.currentUid).off('value', paymentRequestsListener);
+                                paymentRequestsListener = null;
+                            }
+                            updateDrawerUI();
+                            updateWalletUI();
+                            updateStreakUI();
+                            updateReferralUI();
+                            screenHistory = [];
+                            if (currentScreen === loadingScreen) {
+                                loadingScreen.classList.add('fade-out');
+                                setTimeout(() => { switchScreen(authScreen, 'right');
+                                    screenHistory = []; }, 400);
+                            } else if (currentScreen !== authScreen) {
+                                switchScreen(authScreen, 'left');
+                                toast('Signed out.', 'info');
+                            }
+                        }
+                    }
+                });
+            }
 
             // ─── Email/Password Auth ───────────────────────────────────────────────
 
@@ -3265,8 +3278,9 @@
                     toast('Referrer not found.', 'error');
                     return false;
                 }
+                // Give referrer bonus
                 const currentBalance = referrerSnap.val().balance || 0;
-                await db.ref('users/' + referrerUid + '/balance').set(currentBalance + REFERRAL_BONUS);
+                await db.ref('users/' + referrerUid + '/balance').set(currentBalance + REFERRAL_BONUS_REFERRER);
                 const currentCount = referrerSnap.val().referralCount || 0;
                 await db.ref('users/' + referrerUid + '/referralCount').set(currentCount + 1);
                 await db.ref('users/' + referrerUid + '/referrals/' + newUid).set(true);
@@ -3274,10 +3288,16 @@
                 await db.ref('users/' + newUid + '/referredByUid').set(referrerUid);
                 markDeviceReferralUsed();
                 const earned = referrerSnap.val().referralEarned || 0;
-                await db.ref('users/' + referrerUid + '/referralEarned').set(earned + REFERRAL_BONUS);
+                await db.ref('users/' + referrerUid + '/referralEarned').set(earned + REFERRAL_BONUS_REFERRER);
                 await db.ref('referrals/' + refKey + '/count').set(currentCount + 1);
                 await db.ref('referrals/' + refKey + '/referredUsers/' + newUid).set(true);
-                toast('Referral bonus applied! You earned $' + REFERRAL_BONUS + ' USDT!', 'success');
+
+                // Give new user bonus
+                const newUserSnap = await db.ref('users/' + newUid).once('value');
+                const newUserBalance = newUserSnap.val().balance || 0;
+                await db.ref('users/' + newUid + '/balance').set(newUserBalance + REFERRAL_BONUS_NEWUSER);
+
+                toast('Referral applied! You got $' + REFERRAL_BONUS_NEWUSER + ' bonus!', 'success');
                 return true;
             }
 
@@ -3480,7 +3500,7 @@
                 selectedBet = bet;
                 slipSelection.textContent = bet.label;
                 slipOdds.textContent = bet.odds.toFixed(2);
-                slipAmount.value = Math.max(state.appSettings.minBet || 1, 1);
+                slipAmount.value = Math.max(state.appSettings.minBet || 0.15, 0.15);
                 slipError.textContent = '';
                 calculatePotential();
                 bettingSlip.classList.add('open');
@@ -3496,7 +3516,7 @@
             function calculatePotential() {
                 const amount = parseFloat(slipAmount.value) || 0;
                 const odds = parseFloat(slipOdds.textContent) || 1;
-                slipPotential.textContent = 'USDT' + (amount * odds).toFixed(2);
+                slipPotential.textContent = '$' + (amount * odds).toFixed(2);
             }
 
             slipAmount.addEventListener('input', calculatePotential);
@@ -3507,8 +3527,8 @@
                 if (!state.currentUid) { slipError.textContent = 'Please sign in first.'; return; }
                 if (!selectedBet) { slipError.textContent = 'No bet selected.'; return; }
                 const amount = parseFloat(slipAmount.value);
-                const minBet = state.appSettings.minBet || 1;
-                if (!amount || amount < minBet) { slipError.textContent = 'Minimum bet is USDT' + minBet + '.'; return; }
+                const minBet = state.appSettings.minBet || 0.15;
+                if (!amount || amount < minBet) { slipError.textContent = 'Minimum bet is $' + minBet + '.'; return; }
                 if (amount > state.balance) { slipError.textContent = 'Insufficient balance!'; return; }
                 const game = state.games.find(g => g.id === selectedBet.gameId);
                 if (game && (game.status === 'live' || game.status === 'closed')) {
@@ -3640,8 +3660,8 @@
                 const qs = state.quickGameSettings.underOver7;
                 if (!qs || !qs.enabled) { toast('Under/Over 7 is disabled.', 'error'); return; }
                 const amount = parseFloat(uoAmount.value);
-                const minBet = state.appSettings.minBet || 1;
-                if (!amount || amount < minBet) { toast('Minimum bet is USDT' + minBet + '.', 'error'); return; }
+                const minBet = state.appSettings.minBet || 0.15;
+                if (!amount || amount < minBet) { toast('Minimum bet is $' + minBet + '.', 'error'); return; }
                 if (amount > state.balance) { toast('Insufficient balance!', 'error'); return; }
 
                 state.isAnimating = true;
@@ -3698,16 +3718,16 @@
                         state.balance += wonAmount;
                         state.wins = (state.wins || 0) + 1;
                         state.streak = (state.streak || 0) + 1;
-                        uoResult.textContent = label + ' wins! Sum=' + diceSum + '. You won USDT' + wonAmount +
+                        uoResult.textContent = label + ' wins! Sum=' + diceSum + '. You won $' + wonAmount +
                         '.';
                         uoResult.className = 'quick-result win';
-                        toast('You won USDT' + wonAmount + '!', 'success');
+                        toast('You won $' + wonAmount + '!', 'success');
                     } else {
                         state.streak = 0;
-                        uoResult.textContent = label + ' lost. Sum=' + diceSum + '. You lost USDT' + amount +
-                            '. Potential win was USDT' + potentialWin + '.';
+                        uoResult.textContent = label + ' lost. Sum=' + diceSum + '. You lost $' + amount +
+                            '. Potential win was $' + potentialWin + '.';
                         uoResult.className = 'quick-result lose';
-                        toast('You lost USDT' + amount + '.', 'error');
+                        toast('You lost $' + amount + '.', 'error');
                     }
                     const betEntry = {
                         id: randomId(),
@@ -3747,8 +3767,8 @@
                 const qs = state.quickGameSettings.headTails;
                 if (!qs || !qs.enabled) { toast('Coin Flip is disabled.', 'error'); return; }
                 const amount = parseFloat(htAmount.value);
-                const minBet = state.appSettings.minBet || 1;
-                if (!amount || amount < minBet) { toast('Minimum bet is USDT' + minBet + '.', 'error'); return; }
+                const minBet = state.appSettings.minBet || 0.15;
+                if (!amount || amount < minBet) { toast('Minimum bet is $' + minBet + '.', 'error'); return; }
                 if (amount > state.balance) { toast('Insufficient balance!', 'error'); return; }
 
                 state.isAnimating = true;
@@ -3795,15 +3815,15 @@
                         state.balance += wonAmount;
                         state.wins = (state.wins || 0) + 1;
                         state.streak = (state.streak || 0) + 1;
-                        htResult.textContent = `It's ${coinResult}! You won USDT${wonAmount}.`;
+                        htResult.textContent = `It's ${coinResult}! You won $${wonAmount}.`;
                         htResult.className = 'quick-result win';
-                        toast('You won USDT' + wonAmount + '!', 'success');
+                        toast('You won $' + wonAmount + '!', 'success');
                     } else {
                         state.streak = 0;
                         htResult.textContent =
-                            `It's ${coinResult}! You lost USDT${amount}. Potential win was USDT${potentialWin}.`;
+                            `It's ${coinResult}! You lost $${amount}. Potential win was $${potentialWin}.`;
                         htResult.className = 'quick-result lose';
-                        toast('You lost USDT' + amount + '.', 'error');
+                        toast('You lost $' + amount + '.', 'error');
                     }
                     const betEntry = {
                         id: randomId(),
@@ -3946,7 +3966,7 @@
                         <div style="font-size:12px;color:var(--text-muted);">${p.timestamp}</div>
                         <div style="font-size:12px;color:var(--text-muted);">${p.method||''} ${p.txnId?'| Txn: '+p.txnId:''} ${p.phone?'| Phone: '+p.phone:''}</div>
                       </div>
-                      <div class="status ${statusClass}">USDT${p.amount} - ${p.status}</div>
+                      <div class="status ${statusClass}">$${p.amount} - ${p.status}</div>
                     </div>`;
                 }
                 paymentHistoryList.innerHTML = html;
@@ -3981,15 +4001,15 @@
                         const b = bets[i];
                         const dispStatus = getBetDisplayStatus(b);
                         const potentialWin = b.potentialWin || Math.floor(b.amount * (b.odds || 1));
-                        const payoutText = b.payout ? ' | Won: USDT' + b.payout : '';
+                        const payoutText = b.payout ? ' | Won: $' + b.payout : '';
                         html += `
                       <div class="payment-item">
                         <div class="left">
                           <div>${b.game || b.label || 'Bet'}</div>
                           <div style="font-size:11px;color:var(--text-muted);">${b.timestamp}</div>
-                          <div style="font-size:11px;color:var(--primary-red);">Odds: ${b.odds||'N/A'} | Potential: USDT${potentialWin}${payoutText}</div>
+                          <div style="font-size:11px;color:var(--primary-red);">Odds: ${b.odds||'N/A'} | Potential: $${potentialWin}${payoutText}</div>
                         </div>
-                        <div class="status ${dispStatus.cls}">USDT${b.amount} - ${dispStatus.text}</div>
+                        <div class="status ${dispStatus.cls}">$${b.amount} - ${dispStatus.text}</div>
                       </div>`;
                     }
                     profileBetHistory.innerHTML = html;
@@ -4010,7 +4030,7 @@
                           <div>${p.type==='deposit'?'Deposit':'Withdraw'}</div>
                           <div style="font-size:11px;color:var(--text-muted);">${p.timestamp}</div>
                         </div>
-                        <div class="status ${statusClass}">USDT${p.amount} - ${p.status}</div>
+                        <div class="status ${statusClass}">$${p.amount} - ${p.status}</div>
                       </div>`;
                     }
                     profilePaymentHistory.innerHTML = html;
@@ -4132,9 +4152,9 @@
                 const amount = parseFloat(depositAmount.value);
                 const txnId = depositTxnId.value.trim();
                 const phone = depositPhone.value.trim();
-                const minDep = state.appSettings.minDeposit || 1;
+                const minDep = state.appSettings.minDeposit || 0.5;
                 if (!methodId || !amount || amount < minDep || !txnId || !phone) {
-                    depositError.textContent = 'Please fill all fields. Min deposit: USDT' + minDep + '.';
+                    depositError.textContent = 'Please fill all fields. Min deposit: $' + minDep + '.';
                     return;
                 }
                 const method = state.paymentMethods.deposit.find(m => m.id === methodId);
@@ -4178,11 +4198,11 @@
                 const minWith = state.appSettings.minWithdraw || 1;
                 const maxWith = state.appSettings.maxWithdraw || 5000;
                 if (!methodId || !number || !amount || amount < minWith) {
-                    withdrawError.textContent = 'Please fill all fields. Min withdraw: USDT' + minWith + '.';
+                    withdrawError.textContent = 'Please fill all fields. Min withdraw: $' + minWith + '.';
                     return;
                 }
                 if (amount > maxWith) {
-                    withdrawError.textContent = 'Max withdraw is USDT' + maxWith + '.';
+                    withdrawError.textContent = 'Max withdraw is $' + maxWith + '.';
                     return;
                 }
                 if (amount > state.balance) {
@@ -4203,7 +4223,7 @@
                 db.ref('paymentRequests/' + state.currentUid).push(entry).then(() => {
                     saveUserDataToFirebase();
                     updateWalletUI();
-                    toast('Withdraw request submitted. USDT' + amount + ' deducted. Await admin approval.', 'info');
+                    toast('Withdraw request submitted. $' + amount + ' deducted. Await admin approval.', 'info');
                     modalOverlay.classList.remove('show');
                 });
             });
@@ -4250,15 +4270,15 @@
                     const sport = game ? game.sport : 'Sport';
                     const dispStatus = getBetDisplayStatus(b);
                     const potentialWin = b.potentialWin || Math.floor(b.amount * (b.odds || 1));
-                    const payoutText = b.payout ? ' | Won: USDT' + b.payout : '';
+                    const payoutText = b.payout ? ' | Won: $' + b.payout : '';
                     html += `
                     <div class="payment-item" data-bet-id="${b.id}">
                       <div class="left">
                         <div>${sport} · ${teams}</div>
                         <div style="font-size:12px;color:var(--text-muted);">${b.timestamp}</div>
-                        <div style="font-size:12px;color:var(--primary-red);">Odds: ${b.odds||'N/A'} | Choice: ${b.choice || b.label} | Potential: USDT${potentialWin}${payoutText}</div>
+                        <div style="font-size:12px;color:var(--primary-red);">Odds: ${b.odds||'N/A'} | Choice: ${b.choice || b.label} | Potential: $${potentialWin}${payoutText}</div>
                       </div>
-                      <div class="status ${dispStatus.cls}">USDT${b.amount} - ${dispStatus.text}</div>
+                      <div class="status ${dispStatus.cls}">$${b.amount} - ${dispStatus.text}</div>
                     </div>`;
                 }
                 sportBetList.innerHTML = html;
@@ -4282,10 +4302,10 @@
                       <p><strong>Match Time:</strong> ${matchTime}</p>
                       <p><strong>Your Choice:</strong> ${bet.choice || bet.label}</p>
                       <p><strong>Odds:</strong> ${bet.odds}</p>
-                      <p><strong>Amount:</strong> USDT${bet.amount}</p>
-                      <p><strong>Potential Win:</strong> USDT${potentialWin}</p>
+                      <p><strong>Amount:</strong> $${bet.amount}</p>
+                      <p><strong>Potential Win:</strong> $${potentialWin}</p>
                       <p><strong>Status:</strong> <span style="color:${dispStatus.cls==='won'?'var(--success-green)':dispStatus.cls==='lost'?'var(--error-red)':dispStatus.cls==='live'?'var(--primary-red)':'var(--warning-orange)'}">${dispStatus.text}</span></p>
-                      ${bet.payout ? `<p><strong>Payout:</strong> USDT${bet.payout}</p>` : ''}
+                      ${bet.payout ? `<p><strong>Payout:</strong> $${bet.payout}</p>` : ''}
                       <p><strong>Bet Time:</strong> ${bet.timestamp}</p>
                     `;
                         betDetailModal.classList.add('show');
@@ -4313,9 +4333,9 @@
 
             copyRefLink.addEventListener('click', function() {
                 const code = state.referralCode || 'NXP-XXXXX';
-                const link = window.location.origin + window.location.pathname + '?ref=' + code;
+                const link = `https://t.me/${BOT_USERNAME}?start=${code}`;
                 navigator.clipboard?.writeText(link).then(() => {
-                    toast('Referral link copied!', 'info');
+                    toast('Telegram referral link copied!', 'info');
                 }).catch(() => {
                     toast('Copy failed.', 'error');
                 });
@@ -4377,7 +4397,6 @@
                 if (ref && ref.trim()) {
                     const el = document.getElementById('signupRefCode');
                     if (el) el.value = ref.trim().toUpperCase();
-                    // Switch to signup tab
                     authTabs.forEach(t => {
                         t.classList.toggle('active', t.dataset.tab === 'signup');
                     });
@@ -4391,6 +4410,9 @@
 
             switchQuickGame('uo');
             updateReferralUI();
+
+            // Start the auth flow (try Telegram auto-login first)
+            initAuth();
 
             // Expose for debugging
             window.__nexus = { state, db, auth, renderGames, navigateTo, goBack, switchQuickGame };
